@@ -8,10 +8,10 @@
 - Michel Mauricio Castañeda Braga - micastanedab@unal.edu.co
 
 ## Nombre del proyecto  
-**SecureVault**
+**FortiFile**
 
 ## Descripción del proyecto  
-**SecureVault** es una aplicación de escritorio orientada a ofrecer una solución segura y amigable para el almacenamiento, organización y protección de archivos personales o confidenciales. La aplicación incorpora técnicas de **cifrado**, **autenticación** y **control de acceso**, todo esto a través de una interfaz gráfica intuitiva y una base de datos relacional para gestionar eficientemente la información.
+**FortiFile** es una aplicación de escritorio orientada a ofrecer una solución segura y amigable para el almacenamiento, organización y protección de archivos personales o confidenciales. La aplicación incorpora técnicas de **cifrado**, **autenticación** y **control de acceso**, todo esto a través de una interfaz gráfica intuitiva y una base de datos relacional para gestionar eficientemente la información.
 
 ## Objetivo  
 El objetivo principal de **SecureVault** es proporcionar a los usuarios un entorno confiable donde puedan proteger su información sensible, haciendo uso de prácticas modernas de seguridad y diseño de software, sin comprometer la facilidad de uso.
