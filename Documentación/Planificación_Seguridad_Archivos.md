@@ -1,4 +1,6 @@
 
+Link: https://docs.google.com/spreadsheets/d/1bfsx1HbFqBZ2fPkM9djqvLRToSRa8o6eCNoxn3sWvq4/edit?usp=sharing
+
 ### 📄 1. Definición de requisitos
 
 | ID     | REQUISITO                            | CASO DE USO   | PRIORIZACIÓN   | NOTA                                                                                            |
