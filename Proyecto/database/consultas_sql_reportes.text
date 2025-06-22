@@ -1,0 +1,56 @@
+-- Mostrar todos los reportes con detalles completos
+SELECT
+  r.ID_REPORTS       AS ReporteID,
+  u.Email            AS Usuario,
+  c.Name             AS Categoría,
+  l.Name_Locations   AS Ubicación,
+  r.Name_Reports     AS Objeto,
+  r.Descripcion      AS Descripción,
+  r.status           AS Estado,
+  r.incident_date    AS Fecha_Incidente,
+  r.created_at       AS Fecha_Creación
+FROM reports r
+JOIN Users u       ON r.ID_USERS = u.ID_USERS
+JOIN Categorias c  ON r.ID_CATEGORIAS = c.ID_CATEGORIAS
+JOIN locations l   ON r.ID_LOCATIONS = l.ID_LOCATIONS
+ORDER BY r.ID_REPORTS;
+
+-- Ver solo objetos perdidos
+SELECT *
+FROM reports
+WHERE status = 'perdido';
+
+-- Ver reportes encontrados en la Cafetería
+SELECT r.ID_REPORTS, r.Name_Reports, l.Name_Locations, r.status
+FROM reports r
+JOIN locations l ON r.ID_LOCATIONS = l.ID_LOCATIONS
+WHERE r.status = 'encontrado'
+  AND l.Name_Locations = 'Cafetería';
+
+-- Contar reportes por categoría
+SELECT c.Name AS Categoría, COUNT(*) AS Total_Reportes
+FROM reports r
+JOIN Categorias c ON r.ID_CATEGORIAS = c.ID_CATEGORIAS
+GROUP BY r.ID_CATEGORIAS;
+
+-- Ver reportes entre fechas
+SELECT *
+FROM reports
+WHERE incident_date BETWEEN '2025-06-01' AND '2025-06-21';
+
+-- Mostrar las 10 entradas más recientes (por fecha de incidente)
+SELECT ID_REPORTS, Name_Reports, incident_date
+FROM reports
+ORDER BY DATE(incident_date) DESC
+LIMIT 10;
+
+-- Mostrar la fecha de creación ajustada a Colombia (UTC-5)
+SELECT ID_REPORTS, Name_Reports,
+  DATETIME(created_at, '-5 hours') AS Fecha_Creación_Colombia
+FROM reports;
+
+-- Reportes por usuario
+SELECT u.Email, COUNT(r.ID_REPORTS) AS Cantidad_Reportes
+FROM Users u
+LEFT JOIN reports r ON u.ID_USERS = r.ID_USERS
+GROUP BY u.ID_USERS;
