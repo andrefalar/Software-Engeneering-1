@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 
-# Ruta a la base de datos en la misma carpeta
+# poner ruta de accseso en este caso esta en la misma carpeta donde esta la basde de datos
 DB_PATH = 'Base_FortiFile.db'
 
 def conectar_db():
