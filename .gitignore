@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.db
+.env
+.vscode/
+venv/
+
+# FortiFile - Archivos de seguridad y datos sensibles
+fortifile.key
+test_fortifile.db
+secure_files/
+backup_test/
+
+# Archivos temporales de prueba
+test_document.txt
+downloaded_document.txt
+
+# Logs (si los agregamos más adelante)
+*.log
