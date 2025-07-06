@@ -14,3 +14,5 @@ class Archivo(Base):
 
     def __repr__(self):
         return f"<Archivo(id={self.id_archivo}, nombre='{self.nombre_archivo}')>"
+
+pip install -r requirements.txt
