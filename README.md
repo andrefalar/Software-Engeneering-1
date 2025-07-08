@@ -1,3 +1,11 @@
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/df009338-ea3e-4e99-bbd7-bb4e2b44d965" width="300" alt="FortiFile Logo"><br>
+</p>
+
+<h1 align="center">
+  <strong><span style="color:#002147">FORTIFILE</span></strong>
+</h1>
+
 # Software_Engineering 1 - 2025-1 Grupo #2 Equipo #8
 
 ## Integrantes del equipo
@@ -6,6 +14,7 @@
 - Juan Daniel Jossa Soliz - jjossa@unal.edu.co
 - Jaime Darley Angulo Tenorio - jangulot@unal.edu.co
 - Michel Mauricio Castañeda Braga - micastanedab@unal.edu.co
+
 
 ## Nombre del proyecto  
 **FortiFile**
