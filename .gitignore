@@ -34,6 +34,7 @@ Thumbs.db
 # FortiFile - Archivos de seguridad y datos sensibles
 fortifile.key
 test_fortifile.db
+fortifile.db
 secure_files/
 backup_test/
 
