@@ -1,0 +1,7 @@
+bcrypt==4.3.0
+cffi==1.17.1
+cryptography==45.0.5
+greenlet==3.2.3
+pycparser==2.22
+SQLAlchemy==2.0.41
+typing_extensions==4.14.1

@@ -2,13 +2,18 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyc
+
+# Archivos de base de datos y entornos
+*.db
+.env
 
 # Entornos virtuales
 venv/
 env/
 .venv/
 
-# Archivos del editor VSCode
+# Archivos del editor
 .vscode/
 
 # Archivos del sistema
@@ -25,3 +30,13 @@ Thumbs.db
 
 # Archivos compilados
 *.so
+
+# FortiFile - Archivos de seguridad y datos sensibles
+fortifile.key
+test_fortifile.db
+secure_files/
+backup_test/
+
+# Archivos temporales de prueba
+test_document.txt
+downloaded_document.txt
