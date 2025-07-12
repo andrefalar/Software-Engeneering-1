@@ -31,7 +31,7 @@ El objetivo principal de **SecureVault** es proporcionar a los usuarios un entor
 - Python
 
 ### Interfaz gráfica
-- Tkinter
+- PyQt5
 
 ### Seguridad
 - `cryptography`: para operaciones de cifrado simétrico/asimétrico  
