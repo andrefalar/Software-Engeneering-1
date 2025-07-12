@@ -7,21 +7,22 @@ from PyQt5.QtGui import QFont, QIcon
 import os
 
 from themes import colors, fonts
+from register_view import RegisterView  # Importa la vista de registro
 
 
-class RegisterView(QWidget):
-    def __init__(self, go_to_login):
+class LoginView(QWidget):
+    def __init__(self):
         super().__init__()
         self.setAutoFillBackground(True)
-        self.go_to_login = go_to_login
-        self.setWindowTitle("FortiFile - Registro")
+        self.setWindowTitle("FortiFile")
         self.setMinimumSize(500, 400)
         self.set_icon()
         self.setup_ui()
 
     def set_icon(self):
         icon_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png')
-        self.setWindowIcon(QIcon(icon_path))
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
 
     def setup_ui(self):
         self.setStyleSheet(f"""
@@ -51,29 +52,41 @@ class RegisterView(QWidget):
             }}
         """)
 
-        title_label = QLabel("REGISTRO")
+        # Título
+        title_label = QLabel("INGRESO")
         title_label.setFont(QFont(fonts.TITLE_FONT, 18, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
 
+        # Campos de entrada
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Usuario")
-
-        self.email_input = QLineEdit()
-        self.email_input.setPlaceholderText("Correo electrónico")
 
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Contraseña")
         self.password_input.setEchoMode(QLineEdit.Password)
 
-        self.confirm_password_input = QLineEdit()
-        self.confirm_password_input.setPlaceholderText("Confirmar contraseña")
-        self.confirm_password_input.setEchoMode(QLineEdit.Password)
+        # Botón tipo enlace: Recordar contraseña
+        recordar_button = QPushButton("Recordar contraseña")
+        recordar_button.setFlat(True)
+        recordar_button.setCursor(Qt.PointingHandCursor)
+        recordar_button.setStyleSheet(f"""
+            QPushButton {{
+                color: {colors.GRAY_LIGHT};
+                background: none;
+                border: none;
+                font-size: 10px;
+                text-align: right;
+            }}
+            QPushButton:hover {{
+                color: {colors.GRAY};
+            }}
+        """)
 
-        login_link_button = QPushButton("¿Ya tienes cuenta? Iniciar sesión")
-        login_link_button.setFlat(True)
-        login_link_button.setCursor(Qt.PointingHandCursor)
-        login_link_button.clicked.connect(self.go_to_login)
-        login_link_button.setStyleSheet(f"""
+        # Botón tipo enlace: Registrarse
+        register_button = QPushButton("o Registrarse")
+        register_button.setFlat(True)
+        register_button.setCursor(Qt.PointingHandCursor)
+        register_button.setStyleSheet(f"""
             QPushButton {{
                 color: {colors.GRAY_LIGHT};
                 background: none;
@@ -84,21 +97,30 @@ class RegisterView(QWidget):
                 color: {colors.GRAY};
             }}
         """)
-
-        register_button = QPushButton("Registrarse")
         register_button.clicked.connect(self.on_register_clicked)
 
+        # Botón principal
+        login_button = QPushButton("Ingresar")
+        login_button.clicked.connect(self.on_login_clicked)
+
+        # Layouts
         form_layout = QVBoxLayout()
         form_layout.setSpacing(10)
         form_layout.addWidget(title_label)
         form_layout.addSpacing(10)
         form_layout.addWidget(self.username_input)
-        form_layout.addWidget(self.email_input)
         form_layout.addWidget(self.password_input)
-        form_layout.addWidget(self.confirm_password_input)
-        form_layout.addWidget(register_button)
-        form_layout.addWidget(login_link_button, alignment=Qt.AlignCenter)
 
+        record_layout = QHBoxLayout()
+        record_layout.addStretch()
+        record_layout.addWidget(recordar_button)
+
+        form_layout.addLayout(record_layout)
+        form_layout.addSpacing(10)
+        form_layout.addWidget(login_button)
+        form_layout.addWidget(register_button, alignment=Qt.AlignCenter)
+
+        # Espaciado interno
         outer_layout = QVBoxLayout()
         outer_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         outer_layout.addLayout(form_layout)
@@ -107,5 +129,15 @@ class RegisterView(QWidget):
 
         self.setLayout(outer_layout)
 
+    def on_login_clicked(self):
+        username = self.username_input.text()
+        password = self.password_input.text()
+        print(f"Intento de login con usuario: {username} y contraseña: {password}")
+
     def on_register_clicked(self):
-        print("Registro (sin funcionalidad backend por ahora)")
+        self.register_window = RegisterView(go_to_login=self.show_again)
+        self.register_window.show()
+        self.close()
+
+    def show_again(self):
+        self.show()
