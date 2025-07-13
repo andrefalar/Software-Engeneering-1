@@ -10,18 +10,22 @@ from themes import colors, fonts
 
 
 class RegisterView(QWidget):
-    def __init__(self, go_to_login):
+    """
+    Vista de registro para FortiFile.
+    """
+    def __init__(self, on_register_success, on_login_clicked=None):
         super().__init__()
-        self.setAutoFillBackground(True)
-        self.go_to_login = go_to_login
+        self.on_register_success = on_register_success
+        self.on_login_clicked = on_login_clicked
         self.setWindowTitle("FortiFile - Registro")
         self.setMinimumSize(500, 400)
         self.set_icon()
         self.setup_ui()
 
     def set_icon(self):
-        icon_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png')
-        self.setWindowIcon(QIcon(icon_path))
+        icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png'))
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
 
     def setup_ui(self):
         self.setStyleSheet(f"""
@@ -55,25 +59,32 @@ class RegisterView(QWidget):
         title_label.setFont(QFont(fonts.TITLE_FONT, 18, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
 
+        self.error_label = QLabel("")
+        self.error_label.setStyleSheet(f"color: {getattr(colors, 'ERROR', '#FF5555')}; font-size: 11px;")
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.hide()
+
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Usuario")
-
-        self.email_input = QLineEdit()
-        self.email_input.setPlaceholderText("Correo electrónico")
+        self.username_input.textChanged.connect(self.hide_error)
 
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Contraseña")
         self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_input.textChanged.connect(self.hide_error)
 
         self.confirm_password_input = QLineEdit()
         self.confirm_password_input.setPlaceholderText("Confirmar contraseña")
         self.confirm_password_input.setEchoMode(QLineEdit.Password)
+        self.confirm_password_input.textChanged.connect(self.hide_error)
 
-        login_link_button = QPushButton("¿Ya tienes cuenta? Iniciar sesión")
-        login_link_button.setFlat(True)
-        login_link_button.setCursor(Qt.PointingHandCursor)
-        login_link_button.clicked.connect(self.go_to_login)
-        login_link_button.setStyleSheet(f"""
+        register_button = QPushButton("Registrarse")
+        register_button.clicked.connect(self.on_register_clicked)
+
+        login_button = QPushButton("¿Ya tienes cuenta? Inicia Sesión")
+        login_button.setFlat(True)
+        login_button.setCursor(Qt.PointingHandCursor)
+        login_button.setStyleSheet(f"""
             QPushButton {{
                 color: {colors.GRAY_LIGHT};
                 background: none;
@@ -84,20 +95,18 @@ class RegisterView(QWidget):
                 color: {colors.GRAY};
             }}
         """)
-
-        register_button = QPushButton("Registrarse")
-        register_button.clicked.connect(self.on_register_clicked)
+        login_button.clicked.connect(self.handle_login_clicked)
 
         form_layout = QVBoxLayout()
         form_layout.setSpacing(10)
         form_layout.addWidget(title_label)
         form_layout.addSpacing(10)
+        form_layout.addWidget(self.error_label)
         form_layout.addWidget(self.username_input)
-        form_layout.addWidget(self.email_input)
         form_layout.addWidget(self.password_input)
         form_layout.addWidget(self.confirm_password_input)
         form_layout.addWidget(register_button)
-        form_layout.addWidget(login_link_button, alignment=Qt.AlignCenter)
+        form_layout.addWidget(login_button, alignment=Qt.AlignCenter)
 
         outer_layout = QVBoxLayout()
         outer_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
@@ -106,6 +115,28 @@ class RegisterView(QWidget):
         outer_layout.setContentsMargins(100, 40, 100, 40)
 
         self.setLayout(outer_layout)
+        self.username_input.setFocus()
+
+    def hide_error(self):
+        self.error_label.hide()
 
     def on_register_clicked(self):
-        print("Registro (sin funcionalidad backend por ahora)")
+        username = self.username_input.text()
+        password = self.password_input.text()
+        confirm_password = self.confirm_password_input.text()
+        if not username or not password or not confirm_password:
+            self.error_label.setText("Por favor, completa todos los campos.")
+            self.error_label.show()
+            return
+        if password != confirm_password:
+            self.error_label.setText("Las contraseñas no coinciden.")
+            self.error_label.show()
+            return
+        self.error_label.hide()
+        # Aquí iría la lógica de registro real
+        if callable(self.on_register_success):
+            self.on_register_success()
+
+    def handle_login_clicked(self):
+        if callable(self.on_login_clicked):
+            self.on_login_clicked()
