@@ -6,9 +6,11 @@ import os
 from themes import colors, fonts
 
 class StartView(QWidget):
+    """
+    Vista de inicio de FortiFile.
+    """
     def __init__(self, go_to_login):
         super().__init__()
-        self.setAutoFillBackground(True)
         self.go_to_login = go_to_login
         self.setWindowTitle("FortiFile")
         self.setMinimumSize(500, 400)
@@ -16,8 +18,9 @@ class StartView(QWidget):
         self.setup_ui()
 
     def set_icon(self):
-        icon_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png')
-        self.setWindowIcon(QIcon(icon_path))
+        icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png'))
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
 
     def setup_ui(self):
         self.setStyleSheet(f"""
@@ -43,10 +46,13 @@ class StartView(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(20)
 
-        logo_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png')
-        pixmap = QPixmap(logo_path)
+        logo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png'))
         logo_label = QLabel()
-        logo_label.setPixmap(pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        if os.path.exists(logo_path):
+            pixmap = QPixmap(logo_path)
+            logo_label.setPixmap(pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            logo_label.setText("Sin logo")
         logo_label.setAlignment(Qt.AlignCenter)
 
         title_label = QLabel("FortiFile")
@@ -55,6 +61,7 @@ class StartView(QWidget):
 
         ingresar_button = QPushButton("Ingresar")
         ingresar_button.clicked.connect(self.go_to_login)
+        ingresar_button.setToolTip("Ir a la pantalla de inicio de sesión")
 
         layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         layout.addWidget(logo_label)
