@@ -9,8 +9,13 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QCursor, QIcon, QPixmap, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt, QDateTime
 
+# Agregar el directorio del proyecto al path para poder importar backend
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
+
 from themes import colors, fonts
 from ui.account_view import AccountWindow
+from backend.services.file_service import FileService
 
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".bmp", ".gif"]
 
@@ -62,10 +67,12 @@ class FilterDialog(QDialog):
 
 class FileManagerUI(QMainWindow):
     """Interfaz principal para gestión de archivos."""
-    def __init__(self, on_logout=None, go_to_start=None):
+    def __init__(self, on_logout=None, go_to_start=None, user_id=None):
         super().__init__()
         self.on_logout = on_logout
         self.go_to_start = go_to_start
+        self.user_id = user_id  # ID del usuario actual
+        self.file_service = FileService()  # Inicializar el servicio de archivos
         self.setWindowTitle("FortiFile")
         self.resize(900, 500)
 
@@ -234,6 +241,54 @@ class FileManagerUI(QMainWindow):
         outer_layout.addStretch()
 
         self.setCentralWidget(main_widget)
+        
+        # Cargar archivos del usuario al inicializar
+        self.load_user_files()
+
+    def load_user_files(self):
+        """Carga los archivos del usuario desde la base de datos."""
+        if not self.user_id:
+            print("❌ No hay usuario logueado")
+            return
+        
+        try:
+            result = self.file_service.get_user_files(self.user_id)
+            
+            if result["success"]:
+                self.files_data = []
+                self.file_list.clear()
+                
+                for file_info in result["files"]:
+                    # Convertir información del backend al formato esperado por la UI
+                    file_data = {
+                        "id": file_info["id"],
+                        "name": file_info["nombre"],
+                        "path": "",  # No necesitamos la ruta cifrada en la UI
+                        "type": self._get_file_extension(file_info["nombre"]),
+                        "size": int(file_info["size_mb"] * 1024 * 1024) if file_info["size_mb"] else 0,  # Convertir MB a bytes
+                        "date": file_info["fecha_subida"].strftime("%d/%m/%Y %H:%M") if file_info["fecha_subida"] else "Desconocida"
+                    }
+                    
+                    self.files_data.append(file_data)
+                    
+                    # Agregar a la lista visual
+                    item = QListWidgetItem(file_data["name"])
+                    item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                    item.setCheckState(Qt.Unchecked)
+                    self.file_list.addItem(item)
+                
+                print(f"✅ Cargados {result['count']} archivos del usuario")
+            else:
+                print(f"❌ Error cargando archivos: {result.get('message', 'Error desconocido')}")
+                
+        except Exception as e:
+            print(f"❌ Error inesperado cargando archivos: {e}")
+            QMessageBox.warning(self, "Error", f"No se pudieron cargar los archivos: {str(e)}")
+
+    def _get_file_extension(self, filename):
+        """Obtiene la extensión de un archivo."""
+        ext = os.path.splitext(filename)[1].lower()
+        return ext[1:] if ext else ""
 
     def get_button_style(self):
         """Devuelve el estilo para los botones principales."""
@@ -310,24 +365,36 @@ class FileManagerUI(QMainWindow):
             self.preview_label.clear()
 
     def add_file(self):
+        """Agrega un archivo usando el backend con cifrado automático."""
+        if not self.user_id:
+            QMessageBox.warning(self, "Error", "No hay usuario logueado.")
+            return
+            
         file_path, _ = QFileDialog.getOpenFileName(self, "Seleccionar archivo")
-        if file_path:
-            file_name = os.path.basename(file_path)
-            ext = os.path.splitext(file_name)[1].lower()
-            ext_sigla = ext[1:] if ext else ""
-            size = os.path.getsize(file_path)
-            fecha = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-            item = QListWidgetItem(file_name)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
-            item.setCheckState(Qt.Unchecked)
-            self.file_list.addItem(item)
-            self.files_data.append({
-                "name": file_name,
-                "path": file_path,
-                "type": ext_sigla,
-                "size": size,
-                "date": fecha
-            })
+        if not file_path:
+            return
+        
+        try:
+            # Mostrar mensaje de carga
+            QMessageBox.information(self, "Subiendo archivo", "Subiendo y cifrando archivo, por favor espere...")
+            
+            # Usar el servicio del backend para subir y cifrar el archivo
+            result = self.file_service.upload_file(self.user_id, file_path)
+            
+            if result["success"]:
+                # Archivo subido exitosamente
+                QMessageBox.information(self, "Éxito", result["message"])
+                
+                # Recargar la lista de archivos
+                self.load_user_files()
+                
+            else:
+                # Error al subir archivo
+                QMessageBox.warning(self, "Error", f"Error al subir archivo: {result['message']}")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error Crítico", f"Error inesperado: {str(e)}")
+            print(f"❌ Error en add_file: {e}")
 
     def delete_checked_files(self):
         checked = [i for i in range(self.file_list.count())

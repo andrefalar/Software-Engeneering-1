@@ -167,7 +167,8 @@ class LoginView(QWidget):
                 self.password_input.clear()
                 
                 if callable(self.on_login_success):
-                    self.on_login_success()
+                    # Pasar el user_id al callback
+                    self.on_login_success(result.get("user_id"))
             else:
                 # Login fallido
                 self.error_label.setText(result["message"])
