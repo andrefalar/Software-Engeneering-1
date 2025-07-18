@@ -5,8 +5,14 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 import os
+import sys
+
+# Agregar el directorio del proyecto al path para poder importar backend
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
 
 from themes import colors, fonts
+from backend.services.user_service import UserService
 
 
 class LoginView(QWidget):
@@ -17,6 +23,7 @@ class LoginView(QWidget):
         super().__init__()
         self.on_login_success = on_login_success
         self.on_register_clicked = on_register_clicked
+        self.user_service = UserService()  # Inicializar el servicio de usuario
         self.setWindowTitle("FortiFile")
         self.setMinimumSize(500, 400)
         self.set_icon()
@@ -139,16 +146,50 @@ class LoginView(QWidget):
         self.error_label.hide()
 
     def on_login_clicked(self):
-        username = self.username_input.text()
+        username = self.username_input.text().strip()
         password = self.password_input.text()
+        
+        # Validar que ambos campos estén llenos
         if not username or not password:
             self.error_label.setText("Por favor, ingresa usuario y contraseña.")
             self.error_label.show()
             return
-        self.error_label.hide()
-        # Aquí iría la lógica de autenticación real
-        if callable(self.on_login_success):
-            self.on_login_success()
+        
+        # Intentar autenticar con el backend
+        try:
+            result = self.user_service.authenticate_user(username, password)
+            
+            if result["success"]:
+                # Login exitoso
+                self.error_label.hide()
+                # Limpiar campos por seguridad
+                self.username_input.clear()
+                self.password_input.clear()
+                
+                if callable(self.on_login_success):
+                    self.on_login_success()
+            else:
+                # Login fallido
+                self.error_label.setText(result["message"])
+                self.error_label.show()
+                
+                # Si la cuenta está bloqueada, deshabilitar el formulario
+                if result.get("locked", False):
+                    self.username_input.setEnabled(False)
+                    self.password_input.setEnabled(False)
+                    # Mostrar mensaje adicional
+                    QMessageBox.warning(
+                        self, 
+                        "Cuenta Bloqueada", 
+                        "Tu cuenta ha sido bloqueada por múltiples intentos fallidos.\n"
+                        "Por favor, reinicia la aplicación para intentar de nuevo."
+                    )
+        
+        except Exception as e:
+            # Error inesperado
+            self.error_label.setText(f"Error de conexión: {str(e)}")
+            self.error_label.show()
+            print(f"Error en login: {e}")  # Para debugging
 
     def handle_register_clicked(self):
         if callable(self.on_register_clicked):
