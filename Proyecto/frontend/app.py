@@ -1,5 +1,10 @@
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QStackedWidget
+
+# Agregar el directorio del proyecto al path para poder importar backend
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, project_root)
 
 from ui.login_view import LoginView
 from ui.start_view import StartView

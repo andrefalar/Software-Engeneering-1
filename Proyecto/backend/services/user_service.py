@@ -24,6 +24,8 @@ class UserService:
     def __init__(self):
         """Inicializa el servicio de usuario"""
         self.db_manager = DatabaseManager("fortifile.db")
+        # Crear las tablas si no existen
+        self.db_manager.create_tables()
         self.max_failed_attempts = 3  # RF-04: Máximo intentos fallidos
         self.failed_attempts = 0      # Contador de intentos fallidos
         self.account_locked = False   # Estado de cuenta bloqueada

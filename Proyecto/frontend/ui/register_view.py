@@ -5,8 +5,15 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 import os
+import sys
+
+# Agregar el directorio del proyecto al path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from themes import colors, fonts
+from backend.services.user_service import UserService
 
 
 class RegisterView(QWidget):
@@ -17,6 +24,7 @@ class RegisterView(QWidget):
         super().__init__()
         self.on_register_success = on_register_success
         self.on_login_clicked = on_login_clicked
+        self.user_service = UserService()  # Inicializar el servicio de usuario
         self.setWindowTitle("FortiFile - Registro")
         self.setMinimumSize(500, 400)
         self.set_icon()
@@ -121,21 +129,37 @@ class RegisterView(QWidget):
         self.error_label.hide()
 
     def on_register_clicked(self):
-        username = self.username_input.text()
+        username = self.username_input.text().strip()
         password = self.password_input.text()
         confirm_password = self.confirm_password_input.text()
+        
+        # Validaciones básicas
         if not username or not password or not confirm_password:
             self.error_label.setText("Por favor, completa todos los campos.")
             self.error_label.show()
             return
+            
         if password != confirm_password:
             self.error_label.setText("Las contraseñas no coinciden.")
             self.error_label.show()
             return
-        self.error_label.hide()
-        # Aquí iría la lógica de registro real
-        if callable(self.on_register_success):
-            self.on_register_success()
+            
+        # Registrar usuario usando el servicio
+        result = self.user_service.register_user(username, password)
+        
+        if result["success"]:
+            self.error_label.setText("")
+            self.error_label.hide()
+            # Limpiar campos
+            self.username_input.clear()
+            self.password_input.clear()
+            self.confirm_password_input.clear()
+            
+            if callable(self.on_register_success):
+                self.on_register_success()
+        else:
+            self.error_label.setText(result["message"])
+            self.error_label.show()
 
     def handle_login_clicked(self):
         if callable(self.on_login_clicked):
