@@ -1,9 +1,11 @@
 import bcrypt
+import os
 from sqlalchemy.orm import Session
 from datetime import datetime
 
 from backend.models.user_model import Usuario
 from backend.models.event_model import Evento
+from backend.models.file_model import Archivo
 from backend.database.connection import DatabaseManager
 
 
@@ -280,6 +282,12 @@ class UserService:
         """
         RF-10: Eliminación de cuenta con confirmación de contraseña
         
+        Elimina completamente:
+        - Todos los archivos físicos cifrados del usuario
+        - Todos los registros de archivos de la base de datos
+        - Todos los eventos del usuario
+        - La cuenta del usuario
+        
         Args:
             user_id (int): ID del usuario
             password (str): Contraseña para confirmar
@@ -309,20 +317,54 @@ class UserService:
                 }
             
             username = user.username
+            archivos_eliminados = 0
+            eventos_eliminados = 0
             
-            # Eliminar usuario (archivos y eventos se eliminan por cascade)
+            # 1. Obtener y eliminar todos los archivos físicos del usuario
+            archivos = session.query(Archivo).filter(Archivo.usuario_id == user_id).all()
+            
+            for archivo in archivos:
+                try:
+                    # Eliminar archivo físico cifrado
+                    if os.path.exists(archivo.ruta_archivo):
+                        os.remove(archivo.ruta_archivo)
+                        print(f"🗑️ Archivo físico eliminado: {archivo.ruta_archivo}")
+                    
+                    # Eliminar registro de la base de datos
+                    session.delete(archivo)
+                    archivos_eliminados += 1
+                    
+                except Exception as e:
+                    print(f"❌ Error eliminando archivo {archivo.nombre_archivo}: {e}")
+                    # Continuar con otros archivos aunque uno falle
+            
+            # 2. Eliminar todos los eventos del usuario
+            eventos = session.query(Evento).filter(Evento.usuario_id == user_id).all()
+            
+            for evento in eventos:
+                session.delete(evento)
+                eventos_eliminados += 1
+            
+            # 3. Eliminar la cuenta del usuario
             session.delete(user)
+            
+            # Confirmar todos los cambios
             session.commit()
             
-            print(f"✅ Cuenta '{username}' eliminada correctamente")
+            print(f"✅ Cuenta '{username}' eliminada completamente:")
+            print(f"   - Usuario: 1")
+            print(f"   - Archivos: {archivos_eliminados}")
+            print(f"   - Eventos: {eventos_eliminados}")
             
             return {
                 "success": True,
-                "message": f"Cuenta '{username}' eliminada correctamente"
+                "message": f"Cuenta '{username}' eliminada correctamente. "
+                          f"Se eliminaron {archivos_eliminados} archivo(s) y {eventos_eliminados} evento(s)."
             }
             
         except Exception as e:
             session.rollback()
+            print(f"❌ Error en delete_account: {e}")
             return {
                 "success": False,
                 "message": f"Error al eliminar cuenta: {e}"

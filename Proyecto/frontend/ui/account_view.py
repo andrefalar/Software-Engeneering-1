@@ -16,9 +16,12 @@ from themes import colors, fonts
 from backend.services.user_service import UserService
 
 class ConfirmDeleteDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Confirmar eliminación")
+    def __init__(self, user_service=None, user_id=None, parent=None):
+        super().__init__(parent)
+        self.user_service = user_service
+        self.user_id = user_id
+        self.setWindowTitle("Confirmar eliminación de cuenta")
+        self.setFixedSize(450, 350)
         self.setStyleSheet(f"background-color: {colors.GRAY}; color: {colors.WHITE}; padding: 15px;")
 
         layout = QVBoxLayout()
@@ -27,27 +30,105 @@ class ConfirmDeleteDialog(QDialog):
         logo_path = os.path.join(os.path.dirname(__file__), "logos", "oso_logotipo.png")
         if os.path.exists(logo_path):
             logo_pixmap = QPixmap(logo_path)
-            logo.setPixmap(logo_pixmap.scaled(140, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            logo.setPixmap(logo_pixmap.scaled(120, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo)
 
         texto = QLabel(
-            "¡Atención! Si elimina su cuenta, perderá toda la información guardada sin posibilidad de recuperarla.\n\n"
-            "Esto se debe a que FortiFile está en desarrollo y, por políticas de seguridad, los datos no se almacenan permanentemente."
+            "⚠️ ¡ATENCIÓN! ⚠️\n\n"
+            "Si elimina su cuenta, se perderá TODA la información:\n"
+            "• Todos sus archivos cifrados\n"
+            "• Su cuenta de usuario\n"
+            "• Todo el historial\n\n"
+            "Esta acción NO se puede deshacer.\n\n"
+            "Para confirmar, ingrese su contraseña:"
         )
         texto.setWordWrap(True)
         texto.setAlignment(Qt.AlignCenter)
-        texto.setStyleSheet("font-size: 18px")
+        texto.setStyleSheet("font-size: 14px; font-weight: bold; color: #ffeb3b;")
         layout.addWidget(texto)
+        
+        # Campo de contraseña
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_input.setPlaceholderText("Ingrese su contraseña actual")
+        self.password_input.setStyleSheet(f"""
+            background-color: {colors.DARK}; 
+            color: {colors.WHITE}; 
+            padding: 8px; 
+            font-size: 14px; 
+            border-radius: 4px;
+            border: 2px solid #d32f2f;
+        """)
+        layout.addWidget(self.password_input)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Yes | QDialogButtonBox.No)
-        buttons.button(QDialogButtonBox.Yes).setText("Sí, eliminar")
-        buttons.button(QDialogButtonBox.No).setText("No, cancelar")
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        # Botones
+        buttons_layout = QHBoxLayout()
+        
+        cancel_button = QPushButton("Cancelar")
+        cancel_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {colors.GRAY_DARK};
+                color: {colors.WHITE};
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {colors.LIGHT};
+            }}
+        """)
+        cancel_button.clicked.connect(self.reject)
+        
+        delete_button = QPushButton("SÍ, ELIMINAR CUENTA")
+        delete_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: #d32f2f;
+                color: {colors.WHITE};
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: #b71c1c;
+            }}
+        """)
+        delete_button.clicked.connect(self.confirm_deletion)
+        
+        buttons_layout.addWidget(cancel_button)
+        buttons_layout.addWidget(delete_button)
+        layout.addLayout(buttons_layout)
 
         self.setLayout(layout)
+    
+    def confirm_deletion(self):
+        password = self.password_input.text()
+        
+        if not password:
+            QMessageBox.critical(self, "Error", "Debe ingresar su contraseña para confirmar.")
+            return
+        
+        if not self.user_service or not self.user_id:
+            QMessageBox.critical(self, "Error", "Error del sistema: No se puede eliminar la cuenta.")
+            return
+        
+        try:
+            # Usar el servicio del backend para eliminar la cuenta
+            result = self.user_service.delete_account(self.user_id, password)
+            
+            if result["success"]:
+                QMessageBox.information(self, "Cuenta Eliminada", 
+                                      f"Su cuenta ha sido eliminada permanentemente.\n\n"
+                                      f"Todos sus archivos y datos han sido eliminados de forma segura.")
+                self.accept()  # Cerrar el diálogo exitosamente
+            else:
+                QMessageBox.critical(self, "Error", f"No se pudo eliminar la cuenta:\n{result['message']}")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error inesperado: {str(e)}")
+            print(f"❌ Error en confirm_deletion: {e}")
 
 class PasswordChangeDialog(QDialog):
     def __init__(self, user_id=None, user_service=None, parent=None):
@@ -300,15 +381,27 @@ class AccountWindow(QMainWindow):
                 self.on_logout()
 
     def confirmar_eliminacion(self):
-        confirm = QMessageBox(self)
-        confirm.setWindowTitle("Eliminar Cuenta")
-        confirm.setText("¿Está seguro que desea eliminar su cuenta? Esta acción no se puede deshacer.")
-        confirm.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        confirm.setStyleSheet(f"background-color: {colors.DARKEST}; color: {colors.WHITE}; font-size: 15px;")
-        result = confirm.exec_()
-        if result == QMessageBox.Yes:
-            QMessageBox.information(self, "Cuenta eliminada", "Su cuenta ha sido eliminada permanentemente.")
+        # Mostrar diálogo de confirmación con contraseña
+        dialog = ConfirmDeleteDialog(
+            user_service=self.user_service,
+            user_id=self.user_id,
+            parent=self
+        )
+        
+        # Si el usuario confirma la eliminación
+        if dialog.exec_() == QDialog.Accepted:
+            # Mostrar mensaje final de confirmación
+            QMessageBox.information(
+                self, 
+                "Cuenta Eliminada", 
+                "Su cuenta y todos sus archivos han sido eliminados permanentemente.\n\n"
+                "Será redirigido al inicio de la aplicación."
+            )
+            
+            # Cerrar la ventana y activar el callback de logout
             self.close()
+            if callable(self.on_logout):
+                self.on_logout()
 
     def volver_inicio(self, event):
         if self.go_to_start:
