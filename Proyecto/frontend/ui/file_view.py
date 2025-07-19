@@ -1,21 +1,35 @@
+from backend.services.file_service import FileService
+from ui.account_view import AccountWindow
+from themes import colors, fonts
 import sys
 import os
 import datetime
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QPushButton, QLabel, QLineEdit, QListWidget,
-    QVBoxLayout, QHBoxLayout, QListWidgetItem, QTextEdit, QFileDialog, QMessageBox,
-    QComboBox, QDialog, QDialogButtonBox, QFrame
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QListWidgetItem,
+    QTextEdit,
+    QFileDialog,
+    QMessageBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFrame,
 )
 from PyQt5.QtGui import QFont, QCursor, QIcon, QPixmap, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt, QDateTime
 
 # Agregar el directorio del proyecto al path para poder importar backend
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, project_root)
 
-from themes import colors, fonts
-from ui.account_view import AccountWindow
-from backend.services.file_service import FileService
 
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".bmp", ".gif"]
 
@@ -42,19 +56,27 @@ FILE_TYPE_NAMES = {
     "mp4": "Video MP4",
     "avi": "Video AVI",
     "exe": "Ejecutable",
-    "": "Desconocido"
+    "": "Desconocido",
 }
+
 
 class FilterDialog(QDialog):
     """Diálogo para seleccionar filtro de archivos."""
+
     def __init__(self):
         super().__init__()
-        self.setStyleSheet(f"background-color: {colors.DARKEST}; color: {colors.WHITE};")
+        self.setStyleSheet(
+            f"background-color: {colors.DARKEST}; color: {colors.WHITE};"
+        )
         self.setWindowTitle("Seleccionar Filtro")
         layout = QVBoxLayout()
         self.combo = QComboBox()
-        self.combo.addItems(["Nombre", "Tipo", "Fecha (Recientes primero)", "Fecha (Antiguos primero)"])
-        self.combo.setStyleSheet(f"background-color: {colors.LIGHT}; color: {colors.WHITE}; padding: 5px")
+        self.combo.addItems(
+            ["Nombre", "Tipo", "Fecha (Recientes primero)", "Fecha (Antiguos primero)"]
+        )
+        self.combo.setStyleSheet(
+            f"background-color: {colors.LIGHT}; color: {colors.WHITE}; padding: 5px"
+        )
         layout.addWidget(self.combo)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -65,9 +87,13 @@ class FilterDialog(QDialog):
     def selected_option(self):
         return self.combo.currentText()
 
+
 class FileManagerUI(QMainWindow):
     """Interfaz principal para gestión de archivos."""
-    def __init__(self, on_logout=None, go_to_start=None, go_to_account=None, user_id=None):
+
+    def __init__(
+        self, on_logout=None, go_to_start=None, go_to_account=None, user_id=None
+    ):
         super().__init__()
         self.on_logout = on_logout
         self.go_to_start = go_to_start
@@ -83,8 +109,14 @@ class FileManagerUI(QMainWindow):
         palette = QPalette()
         fondo_base_path = os.path.join(base_path, "logos", "Design sem nome.png")
         fondo_superior_path = os.path.join(base_path, "logos", "QComb.png")
-        fondo_base = QPixmap(fondo_base_path) if os.path.exists(fondo_base_path) else QPixmap()
-        fondo_superior = QPixmap(fondo_superior_path) if os.path.exists(fondo_superior_path) else QPixmap()
+        fondo_base = (
+            QPixmap(fondo_base_path) if os.path.exists(fondo_base_path) else QPixmap()
+        )
+        fondo_superior = (
+            QPixmap(fondo_superior_path)
+            if os.path.exists(fondo_superior_path)
+            else QPixmap()
+        )
 
         fondo_combinado = QPixmap(fondo_base.size())
         fondo_combinado.fill(Qt.transparent)
@@ -112,10 +144,14 @@ class FileManagerUI(QMainWindow):
         logo_path = os.path.join(base_path, "logos", "oso_logotipo.png")
         if os.path.exists(logo_path):
             logo_pixmap = QPixmap(logo_path)
-            logo_label.setPixmap(logo_pixmap.scaled(120, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            logo_label.setPixmap(
+                logo_pixmap.scaled(120, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            )
 
         title_label = QLabel("FortiFile")
-        title_label.setStyleSheet(f"color: {colors.WHITE}; font-size: 24px; font-weight: bold")
+        title_label.setStyleSheet(
+            f"color: {colors.WHITE}; font-size: 24px; font-weight: bold"
+        )
         title_label.setFont(QFont(fonts.TITLE_FONT, 18, QFont.Bold))
         title_label.setAlignment(Qt.AlignVCenter)
 
@@ -155,7 +191,9 @@ class FileManagerUI(QMainWindow):
         header_layout.addWidget(links_widget)
 
         container = QFrame()
-        container.setStyleSheet(f"background-color: {colors.DARKEST}; border-radius: 10px;")
+        container.setStyleSheet(
+            f"background-color: {colors.DARKEST}; border-radius: 10px;"
+        )
         container.setFixedSize(820, 420)
         container_layout = QHBoxLayout(container)
 
@@ -163,7 +201,9 @@ class FileManagerUI(QMainWindow):
 
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Buscar archivo...")
-        self.search_bar.setStyleSheet(f"background-color: {colors.LIGHT}; color: {colors.WHITE}; padding: 5px")
+        self.search_bar.setStyleSheet(
+            f"background-color: {colors.LIGHT}; color: {colors.WHITE}; padding: 5px"
+        )
         self.search_bar.textChanged.connect(self.refresh_file_list)
 
         self.filter_button = QPushButton("Filtro")
@@ -177,7 +217,9 @@ class FileManagerUI(QMainWindow):
         search_layout.addWidget(self.filter_button)
 
         self.file_list = QListWidget()
-        self.file_list.setStyleSheet(f"background-color: {colors.DARK}; color: {colors.WHITE}")
+        self.file_list.setStyleSheet(
+            f"background-color: {colors.DARK}; color: {colors.WHITE}"
+        )
         self.file_list.itemClicked.connect(self.show_file_details)
 
         button_layout = QHBoxLayout()
@@ -205,28 +247,34 @@ class FileManagerUI(QMainWindow):
 
         self.file_info_title = QLabel("Detalles del Archivo")
         self.file_info_title.setAlignment(Qt.AlignCenter)
-        self.file_info_title.setStyleSheet(f"""
+        self.file_info_title.setStyleSheet(
+            f"""
             background-color: {colors.GRAY};
             color: {colors.WHITE};
             padding: 8px;
             font-weight: bold;
             font-size: 16px;
             border-bottom: 1px solid {colors.GRAY_LIGHT};
-        """)
+        """
+        )
 
         self.file_info_text = QTextEdit()
         self.file_info_text.setReadOnly(True)
-        self.file_info_text.setStyleSheet(f"""
+        self.file_info_text.setStyleSheet(
+            f"""
             background-color: {colors.DARK};
             color: {colors.WHITE};
             font-size: 14px;
             border-radius: 6px;
             padding: 10px;
-        """)
+        """
+        )
 
         self.preview_label = QLabel()
         self.preview_label.setFixedHeight(140)
-        self.preview_label.setStyleSheet("border: 1px solid #333; background-color: #222;")
+        self.preview_label.setStyleSheet(
+            "border: 1px solid #333; background-color: #222;"
+        )
         self.preview_label.setAlignment(Qt.AlignCenter)
 
         right_panel.addWidget(self.file_info_title)
@@ -242,7 +290,7 @@ class FileManagerUI(QMainWindow):
         outer_layout.addStretch()
 
         self.setCentralWidget(main_widget)
-        
+
         # Cargar archivos del usuario al inicializar
         self.load_user_files()
 
@@ -251,14 +299,14 @@ class FileManagerUI(QMainWindow):
         if not self.user_id:
             print("❌ No hay usuario logueado")
             return
-        
+
         try:
             result = self.file_service.get_user_files(self.user_id)
-            
+
             if result["success"]:
                 self.files_data = []
                 self.file_list.clear()
-                
+
                 for file_info in result["files"]:
                     # Convertir información del backend al formato esperado por la UI
                     file_data = {
@@ -266,25 +314,39 @@ class FileManagerUI(QMainWindow):
                         "name": file_info["nombre"],
                         "path": "",  # No necesitamos la ruta cifrada en la UI
                         "type": self._get_file_extension(file_info["nombre"]),
-                        "size": int(file_info["size_mb"] * 1024 * 1024) if file_info["size_mb"] else 0,  # Convertir MB a bytes
-                        "date": file_info["fecha_subida"].strftime("%d/%m/%Y %H:%M") if file_info["fecha_subida"] else "Desconocida"
+                        "size": (
+                            int(file_info["size_mb"] * 1024 * 1024)
+                            if file_info["size_mb"]
+                            else 0
+                        ),  # Convertir MB a bytes
+                        "date": (
+                            file_info["fecha_subida"].strftime("%d/%m/%Y %H:%M")
+                            if file_info["fecha_subida"]
+                            else "Desconocida"
+                        ),
                     }
-                    
+
                     self.files_data.append(file_data)
-                    
+
                     # Agregar a la lista visual
                     item = QListWidgetItem(file_data["name"])
-                    item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                    item.setFlags(
+                        item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
+                    )
                     item.setCheckState(Qt.Unchecked)
                     self.file_list.addItem(item)
-                
+
                 print(f"✅ Cargados {result['count']} archivos del usuario")
             else:
-                print(f"❌ Error cargando archivos: {result.get('message', 'Error desconocido')}")
-                
+                print(
+                    f"❌ Error cargando archivos: {result.get('message', 'Error desconocido')}"
+                )
+
         except Exception as e:
             print(f"❌ Error inesperado cargando archivos: {e}")
-            QMessageBox.warning(self, "Error", f"No se pudieron cargar los archivos: {str(e)}")
+            QMessageBox.warning(
+                self, "Error", f"No se pudieron cargar los archivos: {str(e)}"
+            )
 
     def _get_file_extension(self, filename):
         """Obtiene la extensión de un archivo."""
@@ -311,7 +373,7 @@ class FileManagerUI(QMainWindow):
             "Cerrar sesión",
             "¿Seguro que deseas salir de la cuenta?",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
         if reply == QMessageBox.Yes and callable(self.on_logout):
             self.on_logout()
@@ -354,10 +416,14 @@ class FileManagerUI(QMainWindow):
             ext_dot = f".{ext}"
             if ext_dot in IMAGE_EXTENSIONS and os.path.exists(file_info["path"]):
                 pixmap = QPixmap(file_info["path"])
-                self.preview_label.setPixmap(pixmap.scaled(
-                    self.preview_label.width(), self.preview_label.height(),
-                    Qt.KeepAspectRatio, Qt.SmoothTransformation
-                ))
+                self.preview_label.setPixmap(
+                    pixmap.scaled(
+                        self.preview_label.width(),
+                        self.preview_label.height(),
+                        Qt.KeepAspectRatio,
+                        Qt.SmoothTransformation,
+                    )
+                )
             else:
                 self.preview_label.clear()
         else:
@@ -369,29 +435,35 @@ class FileManagerUI(QMainWindow):
         if not self.user_id:
             QMessageBox.warning(self, "Error", "No hay usuario logueado.")
             return
-            
+
         file_path, _ = QFileDialog.getOpenFileName(self, "Seleccionar archivo")
         if not file_path:
             return
-        
+
         try:
             # Mostrar mensaje de carga
-            QMessageBox.information(self, "Subiendo archivo", "Subiendo y cifrando archivo, por favor espere...")
-            
+            QMessageBox.information(
+                self,
+                "Subiendo archivo",
+                "Subiendo y cifrando archivo, por favor espere...",
+            )
+
             # Usar el servicio del backend para subir y cifrar el archivo
             result = self.file_service.upload_file(self.user_id, file_path)
-            
+
             if result["success"]:
                 # Archivo subido exitosamente
                 QMessageBox.information(self, "Éxito", result["message"])
-                
+
                 # Recargar la lista de archivos
                 self.load_user_files()
-                
+
             else:
                 # Error al subir archivo
-                QMessageBox.warning(self, "Error", f"Error al subir archivo: {result['message']}")
-                
+                QMessageBox.warning(
+                    self, "Error", f"Error al subir archivo: {result['message']}"
+                )
+
         except Exception as e:
             QMessageBox.critical(self, "Error Crítico", f"Error inesperado: {str(e)}")
             print(f"❌ Error en add_file: {e}")
@@ -401,7 +473,7 @@ class FileManagerUI(QMainWindow):
         if not self.user_id:
             QMessageBox.warning(self, "Error", "No hay usuario logueado.")
             return
-            
+
         # Obtener archivos seleccionados con sus IDs
         checked_files = []
         for i in range(self.file_list.count()):
@@ -409,62 +481,67 @@ class FileManagerUI(QMainWindow):
             if item.checkState() == Qt.Checked:
                 file_name = item.text()
                 # Buscar el archivo correspondiente en files_data para obtener el ID
-                file_info = next((f for f in self.files_data if f["name"] == file_name), None)
+                file_info = next(
+                    (f for f in self.files_data if f["name"] == file_name), None
+                )
                 if file_info:
-                    checked_files.append({
-                        "name": file_name,
-                        "id": file_info["id"]
-                    })
-        
+                    checked_files.append({"name": file_name, "id": file_info["id"]})
+
         if not checked_files:
-            QMessageBox.information(self, "Eliminar", "No hay archivos seleccionados para eliminar.")
+            QMessageBox.information(
+                self, "Eliminar", "No hay archivos seleccionados para eliminar."
+            )
             return
-            
+
         # Confirmar eliminación
         reply = QMessageBox.question(
             self,
             "Confirmar eliminación",
             f"¿Seguro que deseas eliminar {len(checked_files)} archivo(s) seleccionado(s)?\n\nEsta acción no se puede deshacer.",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
         if reply != QMessageBox.Yes:
             return
-        
+
         # Eliminar archivos uno por uno usando el backend
         deleted_files = []
         failed_files = []
-        
+
         for file_info in checked_files:
             try:
                 result = self.file_service.delete_file(self.user_id, file_info["id"])
-                
+
                 if result["success"]:
                     deleted_files.append(file_info["name"])
                     print(f"✅ Archivo eliminado: {file_info['name']}")
                 else:
                     failed_files.append(f"{file_info['name']}: {result['message']}")
-                    print(f"❌ Error eliminando {file_info['name']}: {result['message']}")
-                    
+                    print(
+                        f"❌ Error eliminando {file_info['name']}: {result['message']}"
+                    )
+
             except Exception as e:
                 failed_files.append(f"{file_info['name']}: Error inesperado - {str(e)}")
                 print(f"❌ Error inesperado eliminando {file_info['name']}: {e}")
-        
+
         # Mostrar resultados
         if deleted_files and not failed_files:
             QMessageBox.information(
-                self, 
-                "Eliminación Exitosa", 
-                f"Se eliminaron correctamente {len(deleted_files)} archivo(s)."
+                self,
+                "Eliminación Exitosa",
+                f"Se eliminaron correctamente {len(deleted_files)} archivo(s).",
             )
         elif deleted_files and failed_files:
             message = f"Eliminados correctamente: {len(deleted_files)} archivo(s)\n\n"
             message += "Errores en:\n" + "\n".join(failed_files)
             QMessageBox.warning(self, "Eliminación Parcial", message)
         else:
-            message = "No se pudo eliminar ningún archivo:\n\n" + "\n".join(failed_files)
+            message = "No se pudo eliminar ningún archivo:\n\n" + "\n".join(
+                failed_files
+            )
             QMessageBox.critical(self, "Error de Eliminación", message)
-        
+
         # Recargar la lista de archivos para reflejar los cambios
         self.load_user_files()
 
@@ -473,7 +550,7 @@ class FileManagerUI(QMainWindow):
         if not self.user_id:
             QMessageBox.warning(self, "Error", "No hay usuario logueado.")
             return
-            
+
         # Obtener archivos seleccionados con sus IDs
         checked_files = []
         for i in range(self.file_list.count()):
@@ -481,41 +558,44 @@ class FileManagerUI(QMainWindow):
             if item.checkState() == Qt.Checked:
                 file_name = item.text()
                 # Buscar el archivo correspondiente en files_data para obtener el ID
-                file_info = next((f for f in self.files_data if f["name"] == file_name), None)
+                file_info = next(
+                    (f for f in self.files_data if f["name"] == file_name), None
+                )
                 if file_info:
-                    checked_files.append({
-                        "name": file_name,
-                        "id": file_info["id"]
-                    })
-        
+                    checked_files.append({"name": file_name, "id": file_info["id"]})
+
         if not checked_files:
-            QMessageBox.information(self, "Descargar", "No hay archivos seleccionados para descargar.")
+            QMessageBox.information(
+                self, "Descargar", "No hay archivos seleccionados para descargar."
+            )
             return
-            
+
         # Confirmar descarga
         reply = QMessageBox.question(
             self,
             "Confirmar descarga",
             f"¿Seguro que deseas descargar {len(checked_files)} archivo(s) seleccionado(s)?",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
         if reply != QMessageBox.Yes:
             return
-            
+
         # Seleccionar carpeta de destino
-        dest_dir = QFileDialog.getExistingDirectory(self, "Seleccionar carpeta de destino")
+        dest_dir = QFileDialog.getExistingDirectory(
+            self, "Seleccionar carpeta de destino"
+        )
         if not dest_dir:
             return
-        
+
         # Descargar archivos uno por uno usando el backend
         downloaded_files = []
         failed_files = []
-        
+
         for file_info in checked_files:
             try:
                 output_path = os.path.join(dest_dir, file_info["name"])
-                
+
                 # Verificar si el archivo ya existe y preguntar al usuario
                 if os.path.exists(output_path):
                     reply = QMessageBox.question(
@@ -523,37 +603,47 @@ class FileManagerUI(QMainWindow):
                         "Archivo Existente",
                         f"El archivo '{file_info['name']}' ya existe en el destino.\n¿Deseas sobrescribirlo?",
                         QMessageBox.Yes | QMessageBox.No,
-                        QMessageBox.No
+                        QMessageBox.No,
                     )
                     if reply != QMessageBox.Yes:
-                        failed_files.append(f"{file_info['name']}: Cancelado por el usuario")
+                        failed_files.append(
+                            f"{file_info['name']}: Cancelado por el usuario"
+                        )
                         continue
-                
+
                 # Usar el servicio del backend para descargar y descifrar
-                result = self.file_service.download_file(self.user_id, file_info["id"], output_path)
-                
+                result = self.file_service.download_file(
+                    self.user_id, file_info["id"], output_path
+                )
+
                 if result["success"]:
                     downloaded_files.append(file_info["name"])
                     print(f"✅ Archivo descargado: {file_info['name']}")
                 else:
                     failed_files.append(f"{file_info['name']}: {result['message']}")
-                    print(f"❌ Error descargando {file_info['name']}: {result['message']}")
-                    
+                    print(
+                        f"❌ Error descargando {file_info['name']}: {result['message']}"
+                    )
+
             except Exception as e:
                 failed_files.append(f"{file_info['name']}: Error inesperado - {str(e)}")
                 print(f"❌ Error inesperado descargando {file_info['name']}: {e}")
-        
+
         # Mostrar resultados
         if downloaded_files and not failed_files:
             QMessageBox.information(
-                self, 
-                "Descarga Exitosa", 
-                f"Se descargaron correctamente {len(downloaded_files)} archivo(s) en:\n{dest_dir}"
+                self,
+                "Descarga Exitosa",
+                f"Se descargaron correctamente {len(downloaded_files)} archivo(s) en:\n{dest_dir}",
             )
         elif downloaded_files and failed_files:
-            message = f"Descargados correctamente: {len(downloaded_files)} archivo(s)\n\n"
+            message = (
+                f"Descargados correctamente: {len(downloaded_files)} archivo(s)\n\n"
+            )
             message += "Errores en:\n" + "\n".join(failed_files)
             QMessageBox.warning(self, "Descarga Parcial", message)
         else:
-            message = "No se pudo descargar ningún archivo:\n\n" + "\n".join(failed_files)
+            message = "No se pudo descargar ningún archivo:\n\n" + "\n".join(
+                failed_files
+            )
             QMessageBox.critical(self, "Error de Descarga", message)

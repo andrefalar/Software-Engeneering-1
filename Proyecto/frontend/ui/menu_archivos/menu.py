@@ -1,9 +1,23 @@
 import sys
 import os
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QPushButton, QLabel, QLineEdit, QListWidget,
-    QVBoxLayout, QHBoxLayout, QListWidgetItem, QTextEdit, QFileDialog, QMessageBox,
-    QComboBox, QDialog, QDialogButtonBox, QFrame
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QListWidgetItem,
+    QTextEdit,
+    QFileDialog,
+    QMessageBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFrame,
 )
 from PyQt5.QtGui import QFont, QCursor, QIcon, QPixmap, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt, QDateTime
@@ -16,20 +30,27 @@ PALETTE = {
     "gray2": "#595551",
     "light_gray": "#7c898b",
     "lighter_gray": "#a6a6a6",
-    "white": "#ffffff"
+    "white": "#ffffff",
 }
 
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".bmp", ".gif"]
+
 
 class FilterDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Seleccionar Filtro")
-        self.setStyleSheet(f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}; padding: 10px")
+        self.setStyleSheet(
+            f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}; padding: 10px"
+        )
         layout = QVBoxLayout()
         self.combo = QComboBox()
-        self.combo.addItems(["Nombre", "Tipo", "Fecha (Recientes primero)", "Fecha (Antiguos primero)"])
-        self.combo.setStyleSheet(f"background-color: {PALETTE['light_gray']}; color: {PALETTE['white']}; padding: 5px")
+        self.combo.addItems(
+            ["Nombre", "Tipo", "Fecha (Recientes primero)", "Fecha (Antiguos primero)"]
+        )
+        self.combo.setStyleSheet(
+            f"background-color: {PALETTE['light_gray']}; color: {PALETTE['white']}; padding: 5px"
+        )
         layout.addWidget(self.combo)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -39,6 +60,7 @@ class FilterDialog(QDialog):
 
     def selected_option(self):
         return self.combo.currentText()
+
 
 class FileManagerUI(QMainWindow):
     def __init__(self):
@@ -77,10 +99,14 @@ class FileManagerUI(QMainWindow):
 
         logo_label = QLabel()
         logo_pixmap = QPixmap(os.path.join(base_path, "logos", "oso_logotipo.png"))
-        logo_label.setPixmap(logo_pixmap.scaled(120, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo_label.setPixmap(
+            logo_pixmap.scaled(120, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        )
 
         title_label = QLabel("FortiFile")
-        title_label.setStyleSheet(f"color: {PALETTE['white']}; font-size: 24px; font-weight: bold")
+        title_label.setStyleSheet(
+            f"color: {PALETTE['white']}; font-size: 24px; font-weight: bold"
+        )
         title_label.setFont(QFont("Ancizar Sans", 18, QFont.Bold))
         title_label.setAlignment(Qt.AlignVCenter)
 
@@ -120,7 +146,9 @@ class FileManagerUI(QMainWindow):
         header_layout.addWidget(links_widget)
 
         container = QFrame()
-        container.setStyleSheet(f"background-color: {PALETTE['dark_gray1']}; border-radius: 10px;")
+        container.setStyleSheet(
+            f"background-color: {PALETTE['dark_gray1']}; border-radius: 10px;"
+        )
         container.setFixedSize(820, 420)
         container_layout = QHBoxLayout(container)
 
@@ -128,7 +156,9 @@ class FileManagerUI(QMainWindow):
 
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Buscar archivo...")
-        self.search_bar.setStyleSheet(f"background-color: {PALETTE['light_gray']}; color: {PALETTE['white']}; padding: 5px")
+        self.search_bar.setStyleSheet(
+            f"background-color: {PALETTE['light_gray']}; color: {PALETTE['white']}; padding: 5px"
+        )
         self.search_bar.textChanged.connect(self.refresh_file_list)
 
         self.filter_button = QPushButton("Filtro")
@@ -141,7 +171,9 @@ class FileManagerUI(QMainWindow):
         search_layout.addWidget(self.filter_button)
 
         self.file_list = QListWidget()
-        self.file_list.setStyleSheet(f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}")
+        self.file_list.setStyleSheet(
+            f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}"
+        )
         self.file_list.itemClicked.connect(self.show_file_details)
 
         button_layout = QHBoxLayout()
@@ -169,11 +201,15 @@ class FileManagerUI(QMainWindow):
 
         self.file_info_title = QLabel("Detalles del Archivo")
         self.file_info_title.setAlignment(Qt.AlignCenter)
-        self.file_info_title.setStyleSheet(f"background-color: {PALETTE['gray1']}; color: {PALETTE['white']}; padding: 5px; font-weight: bold")
+        self.file_info_title.setStyleSheet(
+            f"background-color: {PALETTE['gray1']}; color: {PALETTE['white']}; padding: 5px; font-weight: bold"
+        )
 
         self.file_info_text = QTextEdit()
         self.file_info_text.setReadOnly(True)
-        self.file_info_text.setStyleSheet(f"background-color: {PALETTE['gray1']}; color: {PALETTE['white']}")
+        self.file_info_text.setStyleSheet(
+            f"background-color: {PALETTE['gray1']}; color: {PALETTE['white']}"
+        )
 
         self.preview_label = QLabel()
         self.preview_label.setFixedHeight(140)
@@ -213,11 +249,11 @@ class FileManagerUI(QMainWindow):
             if not file_path:
                 continue
             file_name = os.path.basename(file_path)
-            if any(f['name'] == file_name for f in self.files_data):
+            if any(f["name"] == file_name for f in self.files_data):
                 continue
             file_size = os.path.getsize(file_path) // 1024
             file_ext = os.path.splitext(file_path)[-1].lower()
-            file_type = file_ext.upper().replace('.', '')
+            file_type = file_ext.upper().replace(".", "")
             upload_time = QDateTime.currentDateTime()
             file_info = {
                 "name": file_name,
@@ -225,7 +261,7 @@ class FileManagerUI(QMainWindow):
                 "size": f"{file_size} KB",
                 "type": file_type,
                 "datetime": upload_time,
-                "thumbnail": file_path if file_ext in IMAGE_EXTENSIONS else None
+                "thumbnail": file_path if file_ext in IMAGE_EXTENSIONS else None,
             }
             self.files_data.append(file_info)
         self.refresh_file_list()
@@ -233,11 +269,17 @@ class FileManagerUI(QMainWindow):
     def delete_checked_files(self):
         checked_files = self.get_checked_files()
         if not checked_files:
-            QMessageBox.information(self, "Aviso", "Seleccione al menos un archivo para eliminar.")
+            QMessageBox.information(
+                self, "Aviso", "Seleccione al menos un archivo para eliminar."
+            )
             return
-        confirm = QMessageBox.question(self, "Confirmar eliminación",
-                                       f"¿Está seguro de eliminar {len(checked_files)} archivo(s)? Esta acción no se puede deshacer.",
-                                       QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        confirm = QMessageBox.question(
+            self,
+            "Confirmar eliminación",
+            f"¿Está seguro de eliminar {len(checked_files)} archivo(s)? Esta acción no se puede deshacer.",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
         if confirm == QMessageBox.Yes:
             for file in checked_files:
                 self.files_data.remove(file)
@@ -249,16 +291,25 @@ class FileManagerUI(QMainWindow):
     def download_checked_files(self):
         checked_files = self.get_checked_files()
         if not checked_files:
-            QMessageBox.information(self, "Aviso", "Seleccione al menos un archivo para descargar.")
+            QMessageBox.information(
+                self, "Aviso", "Seleccione al menos un archivo para descargar."
+            )
             return
         for file in checked_files:
-            save_path, _ = QFileDialog.getSaveFileName(self, f"Guardar {file['name']}", file['name'])
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, f"Guardar {file['name']}", file["name"]
+            )
             if save_path:
                 try:
-                    with open(file['path'], 'rb') as f_src, open(save_path, 'wb') as f_dst:
+                    with (
+                        open(file["path"], "rb") as f_src,
+                        open(save_path, "wb") as f_dst,
+                    ):
                         f_dst.write(f_src.read())
                 except Exception as e:
-                    QMessageBox.critical(self, "Error", f"No se pudo guardar el archivo:\n{e}")
+                    QMessageBox.critical(
+                        self, "Error", f"No se pudo guardar el archivo:\n{e}"
+                    )
         QMessageBox.information(self, "Éxito", "Archivos descargados correctamente.")
 
     def get_checked_files(self):
@@ -266,38 +317,43 @@ class FileManagerUI(QMainWindow):
         for i in range(self.file_list.count()):
             item = self.file_list.item(i)
             if item.checkState() == Qt.Checked:
-                checked.append(next((f for f in self.files_data if f['name'] == item.text()), None))
+                checked.append(
+                    next((f for f in self.files_data if f["name"] == item.text()), None)
+                )
         return [f for f in checked if f]
 
     def refresh_file_list(self):
         filter_text = self.search_bar.text().lower()
         self.file_list.clear()
-        sorted_files = sorted(self.files_data, key=lambda x: x['name'].lower())
+        sorted_files = sorted(self.files_data, key=lambda x: x["name"].lower())
         if self.current_filter == "Tipo":
-            sorted_files.sort(key=lambda x: x['type'])
+            sorted_files.sort(key=lambda x: x["type"])
         elif self.current_filter == "Fecha (Recientes primero)":
-            sorted_files.sort(key=lambda x: x['datetime'], reverse=True)
+            sorted_files.sort(key=lambda x: x["datetime"], reverse=True)
         elif self.current_filter == "Fecha (Antiguos primero)":
-            sorted_files.sort(key=lambda x: x['datetime'])
+            sorted_files.sort(key=lambda x: x["datetime"])
 
         for file in sorted_files:
-            if filter_text in file['name'].lower():
-                item = QListWidgetItem(file['name'])
+            if filter_text in file["name"].lower():
+                item = QListWidgetItem(file["name"])
                 item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
                 item.setCheckState(Qt.Unchecked)
-                if file['thumbnail'] and os.path.exists(file['thumbnail']):
-                    pixmap = QPixmap(file['thumbnail']).scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                if file["thumbnail"] and os.path.exists(file["thumbnail"]):
+                    pixmap = QPixmap(file["thumbnail"]).scaled(
+                        32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                    )
                     item.setIcon(QIcon(pixmap))
                 self.file_list.addItem(item)
 
     def show_file_details(self, item):
         file_name = item.text()
-        file = next((f for f in self.files_data if f['name'] == file_name), None)
+        file = next((f for f in self.files_data if f["name"] == file_name), None)
         if not file:
             return
 
-        self.file_info_title.setText(file['name'])
-        self.file_info_text.setText(f"""
+        self.file_info_title.setText(file["name"])
+        self.file_info_text.setText(
+            f"""
 Tipo:
 {file['type']}
 
@@ -309,10 +365,13 @@ Fecha de Subida:
 
 Hora de Subida:
 {file['datetime'].time().toString('hh:mm AP')}
-""")
+"""
+        )
 
-        if file['thumbnail'] and os.path.exists(file['thumbnail']):
-            pixmap = QPixmap(file['thumbnail']).scaled(140, 140, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if file["thumbnail"] and os.path.exists(file["thumbnail"]):
+            pixmap = QPixmap(file["thumbnail"]).scaled(
+                140, 140, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
             self.preview_label.setPixmap(pixmap)
         else:
             self.preview_label.clear()
@@ -324,15 +383,23 @@ Hora de Subida:
             self.refresh_file_list()
 
     def confirm_logout(self, event):
-        confirm = QMessageBox.question(self, "Confirmar salida", "¿Desea cerrar sesión?", QMessageBox.Yes | QMessageBox.No)
+        confirm = QMessageBox.question(
+            self,
+            "Confirmar salida",
+            "¿Desea cerrar sesión?",
+            QMessageBox.Yes | QMessageBox.No,
+        )
         if confirm == QMessageBox.Yes:
             QMessageBox.information(self, "Sesión cerrada", "Ha salido de su cuenta.")
             self.close()
 
     def confirm_account_details(self, event):
-        QMessageBox.information(self, "Cuenta", "Aquí se mostrarían los detalles de su cuenta.")
+        QMessageBox.information(
+            self, "Cuenta", "Aquí se mostrarían los detalles de su cuenta."
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = FileManagerUI()
     window.show()

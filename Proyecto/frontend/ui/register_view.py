@@ -1,6 +1,15 @@
+from backend.services.user_service import UserService
+from themes import colors, fonts
 from PyQt5.QtWidgets import (
-    QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
-    QHBoxLayout, QSpacerItem, QSizePolicy, QDialog
+    QWidget,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+    QHBoxLayout,
+    QSpacerItem,
+    QSizePolicy,
+    QDialog,
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QPixmap
@@ -8,12 +17,9 @@ import os
 import sys
 
 # Agregar el directorio del proyecto al path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-
-from themes import colors, fonts
-from backend.services.user_service import UserService
 
 
 class SuccessDialog(QDialog):
@@ -21,7 +27,9 @@ class SuccessDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("¡Registro Exitoso!")
         self.setFixedSize(450, 350)
-        self.setStyleSheet(f"background-color: {colors.GRAY}; color: {colors.WHITE}; padding: 15px;")
+        self.setStyleSheet(
+            f"background-color: {colors.GRAY}; color: {colors.WHITE}; padding: 15px;"
+        )
 
         layout = QVBoxLayout()
 
@@ -30,7 +38,11 @@ class SuccessDialog(QDialog):
         logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "icon.png")
         if os.path.exists(logo_path):
             logo_pixmap = QPixmap(logo_path)
-            logo.setPixmap(logo_pixmap.scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            logo.setPixmap(
+                logo_pixmap.scaled(
+                    120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                )
+            )
         else:
             logo.setText("✅")
             logo.setStyleSheet("font-size: 60px; color: #4CAF50;")
@@ -54,7 +66,8 @@ class SuccessDialog(QDialog):
 
         # Botón de continuar
         continue_button = QPushButton("Continuar al Login")
-        continue_button.setStyleSheet(f"""
+        continue_button.setStyleSheet(
+            f"""
             QPushButton {{
                 background-color: #4CAF50;
                 color: {colors.WHITE};
@@ -67,9 +80,10 @@ class SuccessDialog(QDialog):
             QPushButton:hover {{
                 background-color: #45a049;
             }}
-        """)
+        """
+        )
         continue_button.clicked.connect(self.accept)
-        
+
         layout.addWidget(continue_button, alignment=Qt.AlignCenter)
         self.setLayout(layout)
 
@@ -78,6 +92,7 @@ class RegisterView(QWidget):
     """
     Vista de registro para FortiFile.
     """
+
     def __init__(self, on_register_success, on_login_clicked=None):
         super().__init__()
         self.on_register_success = on_register_success
@@ -89,12 +104,15 @@ class RegisterView(QWidget):
         self.setup_ui()
 
     def set_icon(self):
-        icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.png'))
+        icon_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "assets", "icon.png")
+        )
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
     def setup_ui(self):
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             QWidget {{
                 background-color: {colors.DARKEST};
                 font-family: '{fonts.BODY_FONT}';
@@ -124,14 +142,17 @@ class RegisterView(QWidget):
                 font-family: '{fonts.BODY_FONT}';
                 font-size: 14px;
             }}
-        """)
+        """
+        )
 
         title_label = QLabel("REGISTRO")
         title_label.setFont(QFont(fonts.TITLE_FONT, 24, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
 
         self.error_label = QLabel("")
-        self.error_label.setStyleSheet(f"color: {getattr(colors, 'ERROR', '#FF5555')}; font-size: 13px;")
+        self.error_label.setStyleSheet(
+            f"color: {getattr(colors, 'ERROR', '#FF5555')}; font-size: 13px;"
+        )
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.hide()
 
@@ -140,7 +161,9 @@ class RegisterView(QWidget):
         self.username_input.textChanged.connect(self.hide_error)
 
         self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Contraseña (8+ caracteres, 1 mayúscula, 1 minúscula)")
+        self.password_input.setPlaceholderText(
+            "Contraseña (8+ caracteres, 1 mayúscula, 1 minúscula)"
+        )
         self.password_input.setEchoMode(QLineEdit.Password)
         self.password_input.textChanged.connect(self.hide_error)
 
@@ -155,7 +178,8 @@ class RegisterView(QWidget):
         login_button = QPushButton("¿Ya tienes cuenta? Inicia Sesión")
         login_button.setFlat(True)
         login_button.setCursor(Qt.PointingHandCursor)
-        login_button.setStyleSheet(f"""
+        login_button.setStyleSheet(
+            f"""
             QPushButton {{
                 color: {colors.GRAY_LIGHT};
                 background: none;
@@ -165,7 +189,8 @@ class RegisterView(QWidget):
             QPushButton:hover {{
                 color: {colors.GRAY};
             }}
-        """)
+        """
+        )
         login_button.clicked.connect(self.handle_login_clicked)
 
         # Establecer ancho fijo para los campos de entrada
@@ -187,18 +212,26 @@ class RegisterView(QWidget):
 
         # Layout principal con espaciadores horizontales para centrar el formulario
         center_layout = QHBoxLayout()
-        center_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
-        
+        center_layout.addSpacerItem(
+            QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        )
+
         form_widget = QWidget()
         form_widget.setLayout(form_layout)
         center_layout.addWidget(form_widget)
-        
-        center_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+
+        center_layout.addSpacerItem(
+            QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        )
 
         outer_layout = QVBoxLayout()
-        outer_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        outer_layout.addSpacerItem(
+            QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        )
         outer_layout.addLayout(center_layout)
-        outer_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        outer_layout.addSpacerItem(
+            QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        )
         outer_layout.setContentsMargins(40, 40, 40, 40)
 
         self.setLayout(outer_layout)
@@ -211,37 +244,41 @@ class RegisterView(QWidget):
         username = self.username_input.text().strip()
         password = self.password_input.text()
         confirm_password = self.confirm_password_input.text()
-        
+
         # Validaciones básicas
         if not username or not password or not confirm_password:
             self.error_label.setText("Por favor, completa todos los campos.")
             self.error_label.show()
             return
-            
+
         if password != confirm_password:
             self.error_label.setText("Las contraseñas no coinciden.")
             self.error_label.show()
             return
-        
+
         # Validaciones de complejidad de contraseña
         if len(password) < 8:
             self.error_label.setText("La contraseña debe tener al menos 8 caracteres.")
             self.error_label.show()
             return
-        
+
         if not any(c.isupper() for c in password):
-            self.error_label.setText("La contraseña debe contener al menos una letra mayúscula.")
+            self.error_label.setText(
+                "La contraseña debe contener al menos una letra mayúscula."
+            )
             self.error_label.show()
             return
-        
+
         if not any(c.islower() for c in password):
-            self.error_label.setText("La contraseña debe contener al menos una letra minúscula.")
+            self.error_label.setText(
+                "La contraseña debe contener al menos una letra minúscula."
+            )
             self.error_label.show()
             return
-            
+
         # Registrar usuario usando el servicio
         result = self.user_service.register_user(username, password)
-        
+
         if result["success"]:
             self.error_label.setText("")
             self.error_label.hide()
@@ -249,7 +286,7 @@ class RegisterView(QWidget):
             self.username_input.clear()
             self.password_input.clear()
             self.confirm_password_input.clear()
-            
+
             # Mostrar diálogo de éxito
             success_dialog = SuccessDialog(username, parent=self)
             if success_dialog.exec_() == QDialog.Accepted:

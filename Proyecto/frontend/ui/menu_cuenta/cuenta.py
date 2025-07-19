@@ -1,7 +1,18 @@
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout,
-    QHBoxLayout, QFrame, QInputDialog, QMessageBox, QDialog, QDialogButtonBox,
-    QLineEdit, QToolButton
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QHBoxLayout,
+    QFrame,
+    QInputDialog,
+    QMessageBox,
+    QDialog,
+    QDialogButtonBox,
+    QLineEdit,
+    QToolButton,
 )
 from PyQt5.QtGui import QPixmap, QFont, QCursor, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt
@@ -16,26 +27,32 @@ PALETTE = {
     "gray2": "#595551",
     "light_gray": "#7c898b",
     "lighter_gray": "#a6a6a6",
-    "white": "#ffffff"
+    "white": "#ffffff",
 }
 
 # Ruta base para imágenes (carpeta 'logos' en el mismo directorio)
 BASE_PATH = os.path.join(os.path.dirname(__file__), "logos")
 
+
 def ruta_imagen(nombre):
     return os.path.join(BASE_PATH, nombre)
+
 
 class ConfirmDeleteDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Confirmar eliminación")
-        self.setStyleSheet(f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}; padding: 15px;")
+        self.setStyleSheet(
+            f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}; padding: 15px;"
+        )
 
         layout = QVBoxLayout()
 
         logo = QLabel()
         logo_pixmap = QPixmap(ruta_imagen("oso_logotipo.png"))
-        logo.setPixmap(logo_pixmap.scaled(140, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo.setPixmap(
+            logo_pixmap.scaled(140, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        )
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo)
 
@@ -57,11 +74,14 @@ class ConfirmDeleteDialog(QDialog):
 
         self.setLayout(layout)
 
+
 class PasswordChangeDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Cambiar Contraseña")
-        self.setStyleSheet(f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}; padding: 15px;")
+        self.setStyleSheet(
+            f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}; padding: 15px;"
+        )
 
         layout = QVBoxLayout()
         self.inputs = []
@@ -73,13 +93,19 @@ class PasswordChangeDialog(QDialog):
             input_ = QLineEdit()
             input_.setEchoMode(QLineEdit.Password)
             input_.setPlaceholderText(texto)
-            input_.setStyleSheet(f"background-color: {PALETTE['gray1']}; color: {PALETTE['white']}; padding: 5px")
+            input_.setStyleSheet(
+                f"background-color: {PALETTE['gray1']}; color: {PALETTE['white']}; padding: 5px"
+            )
 
             toggle_btn = QToolButton()
             toggle_btn.setCheckable(True)
             toggle_btn.setText("👁️")
-            toggle_btn.setStyleSheet("color: white; background: transparent; font-size: 16px;")
-            toggle_btn.clicked.connect(lambda _, inp=input_, btn=toggle_btn: self.toggle_visibility(inp, btn))
+            toggle_btn.setStyleSheet(
+                "color: white; background: transparent; font-size: 16px;"
+            )
+            toggle_btn.clicked.connect(
+                lambda _, inp=input_, btn=toggle_btn: self.toggle_visibility(inp, btn)
+            )
 
             input_.textChanged.connect(self.verificar_coincidencia)
 
@@ -90,7 +116,9 @@ class PasswordChangeDialog(QDialog):
             layout.addLayout(h)
 
         self.boton_aceptar = QPushButton("Aceptar")
-        self.boton_aceptar.setStyleSheet(f"background-color: {PALETTE['gray2']}; color: {PALETTE['white']}; padding: 6px")
+        self.boton_aceptar.setStyleSheet(
+            f"background-color: {PALETTE['gray2']}; color: {PALETTE['white']}; padding: 6px"
+        )
         self.boton_aceptar.clicked.connect(self.validar_contrasena)
         self.boton_aceptar.setEnabled(False)
 
@@ -98,19 +126,26 @@ class PasswordChangeDialog(QDialog):
         self.setLayout(layout)
 
     def toggle_visibility(self, input_field, button):
-        input_field.setEchoMode(QLineEdit.Normal if button.isChecked() else QLineEdit.Password)
+        input_field.setEchoMode(
+            QLineEdit.Normal if button.isChecked() else QLineEdit.Password
+        )
 
     def verificar_coincidencia(self):
         actual, nueva, confirmar = [i.text() for i in self.inputs]
-        self.boton_aceptar.setEnabled(all([actual, nueva, confirmar]) and nueva == confirmar)
+        self.boton_aceptar.setEnabled(
+            all([actual, nueva, confirmar]) and nueva == confirmar
+        )
 
     def validar_contrasena(self):
         _, nueva, confirmar = [i.text() for i in self.inputs]
         if nueva != confirmar:
             QMessageBox.critical(self, "Error", "Las contraseñas no coinciden.")
             return
-        QMessageBox.information(self, "Éxito", "Su contraseña ha sido cambiada con éxito.")
+        QMessageBox.information(
+            self, "Éxito", "Su contraseña ha sido cambiada con éxito."
+        )
         self.accept()
+
 
 class AccountWindow(QMainWindow):
     def __init__(self, nombre_usuario="[Nombre de Cuenta]"):
@@ -143,10 +178,14 @@ class AccountWindow(QMainWindow):
 
         logo = QLabel()
         logo_pixmap = QPixmap(ruta_imagen("oso_logotipo.png"))
-        logo.setPixmap(logo_pixmap.scaled(120, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo.setPixmap(
+            logo_pixmap.scaled(120, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        )
 
         title = QLabel("FortiFile")
-        title.setStyleSheet(f"color: {PALETTE['white']}; font-size: 20px; font-weight: bold")
+        title.setStyleSheet(
+            f"color: {PALETTE['white']}; font-size: 20px; font-weight: bold"
+        )
         title.setFont(QFont("Arial", 18))
 
         header.addWidget(logo)
@@ -156,7 +195,8 @@ class AccountWindow(QMainWindow):
         self.link_inicio = QLabel("Inicio")
         self.link_cuenta = QLabel("Cuenta")
         for link in [self.link_inicio, self.link_cuenta]:
-            link.setStyleSheet(f"""
+            link.setStyleSheet(
+                f"""
                 QLabel {{
                     color: {PALETTE['white']};
                     font-size: 16px;
@@ -166,7 +206,8 @@ class AccountWindow(QMainWindow):
                 QLabel:hover {{
                     color: {PALETTE['lighter_gray']};
                 }}
-            """)
+            """
+            )
             link.setCursor(QCursor(Qt.PointingHandCursor))
             link.setAlignment(Qt.AlignVCenter)
 
@@ -186,11 +227,15 @@ class AccountWindow(QMainWindow):
         panel_layout.setSpacing(15)
 
         logo_usuario = QLabel()
-        logo_usuario.setPixmap(logo_pixmap.scaled(400, 400, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo_usuario.setPixmap(
+            logo_pixmap.scaled(400, 400, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        )
         logo_usuario.setAlignment(Qt.AlignCenter)
 
         self.saludo_label = QLabel(f"Hola de nuevo, {self.nombre_usuario}")
-        self.saludo_label.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        self.saludo_label.setStyleSheet(
+            "color: white; font-size: 16px; font-weight: bold;"
+        )
         self.saludo_label.setAlignment(Qt.AlignCenter)
 
         logo_saludo_layout = QVBoxLayout()
@@ -248,11 +293,17 @@ class AccountWindow(QMainWindow):
         """
 
     def abrir_dialogo_edicion(self):
-        nuevo_nombre, ok = QInputDialog.getText(self, "Editar Nombre", "¿A qué nombre desea cambiar?")
+        nuevo_nombre, ok = QInputDialog.getText(
+            self, "Editar Nombre", "¿A qué nombre desea cambiar?"
+        )
         if ok and nuevo_nombre:
-            confirm = QMessageBox.question(self, "Confirmar cambio",
-                                           f"¿Está seguro de cambiar el nombre a '{nuevo_nombre}'?",
-                                           QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            confirm = QMessageBox.question(
+                self,
+                "Confirmar cambio",
+                f"¿Está seguro de cambiar el nombre a '{nuevo_nombre}'?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
             if confirm == QMessageBox.Yes:
                 self.nombre_usuario = nuevo_nombre
                 self.saludo_label.setText(f"Hola de nuevo, {self.nombre_usuario}")
@@ -268,10 +319,15 @@ class AccountWindow(QMainWindow):
                 self,
                 "Confirmación final",
                 "¿Está completamente seguro de eliminar su cuenta? Esta acción no se puede deshacer.",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
             )
             if segundo == QMessageBox.Yes:
-                QMessageBox.information(self, "Cuenta eliminada", "Su cuenta ha sido eliminada permanentemente.")
+                QMessageBox.information(
+                    self,
+                    "Cuenta eliminada",
+                    "Su cuenta ha sido eliminada permanentemente.",
+                )
                 self.close()
 
     def recargar_pagina(self):
@@ -279,7 +335,8 @@ class AccountWindow(QMainWindow):
         self.nueva_ventana = AccountWindow(nombre_usuario=self.nombre_usuario)
         self.nueva_ventana.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     ventana = AccountWindow()
     ventana.show()
