@@ -119,9 +119,8 @@ class ConfirmDeleteDialog(QDialog):
             result = self.user_service.delete_account(self.user_id, password)
             
             if result["success"]:
-                QMessageBox.information(self, "Cuenta Eliminada", 
-                                      f"Su cuenta ha sido eliminada permanentemente.\n\n"
-                                      f"Todos sus archivos y datos han sido eliminados de forma segura.")
+                # Solo cerrar el diálogo sin mostrar mensaje adicional
+                # El mensaje se mostrará en el método padre
                 self.accept()  # Cerrar el diálogo exitosamente
             else:
                 QMessageBox.critical(self, "Error", f"No se pudo eliminar la cuenta:\n{result['message']}")
@@ -194,7 +193,8 @@ class PasswordChangeDialog(QDialog):
             result = self.user_service.change_password(self.user_id, actual, nueva)
             
             if result["success"]:
-                QMessageBox.information(self, "Éxito", "Su contraseña ha sido cambiada exitosamente.\n\nPor seguridad, debe iniciar sesión nuevamente.")
+                # Solo cerrar el diálogo sin mostrar mensaje adicional
+                # El mensaje se mostrará en el método padre
                 self.accept()  # Cerrar el diálogo exitosamente
             else:
                 QMessageBox.critical(self, "Error", f"Error al cambiar contraseña: {result['message']}")
