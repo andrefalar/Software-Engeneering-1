@@ -7,37 +7,27 @@ from PyQt5.QtGui import QPixmap, QFont, QCursor, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt
 import sys
 import os
+
+# Agregar el directorio del proyecto al path para poder importar backend
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
+
 from themes import colors, fonts
-
-ASSETS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
-
-PALETTE = {
-    "black": "#000000",
-    "dark_gray1": "#121111",
-    "dark_gray2": "#253439",
-    "gray1": "#4a4744",
-    "gray2": "#595551",
-    "light_gray": "#7c898b",
-    "lighter_gray": "#a6a6a6",
-    "white": "#ffffff"
-}
-
-BASE_PATH = os.path.join(os.path.dirname(__file__), "logos")
-
-def ruta_imagen(nombre):
-    return os.path.join(BASE_PATH, nombre)
+from backend.services.user_service import UserService
 
 class ConfirmDeleteDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Confirmar eliminación")
-        self.setStyleSheet(f"background-color: {PALETTE['dark_gray2']}; color: {PALETTE['white']}; padding: 15px;")
+        self.setStyleSheet(f"background-color: {colors.GRAY}; color: {colors.WHITE}; padding: 15px;")
 
         layout = QVBoxLayout()
 
         logo = QLabel()
-        logo_pixmap = QPixmap(ruta_imagen("oso_logotipo.png"))
-        logo.setPixmap(logo_pixmap.scaled(140, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo_path = os.path.join(os.path.dirname(__file__), "logos", "oso_logotipo.png")
+        if os.path.exists(logo_path):
+            logo_pixmap = QPixmap(logo_path)
+            logo.setPixmap(logo_pixmap.scaled(140, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo)
 
@@ -62,7 +52,7 @@ class ConfirmDeleteDialog(QDialog):
 class PasswordChangeDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Modificar Contraseña")
+        self.setWindowTitle("Cambiar Contraseña")
         self.setFixedSize(370, 220)
         self.setStyleSheet("background-color: #595551; color: white; font-size: 15px;")
         layout = QVBoxLayout(self)
@@ -97,10 +87,25 @@ class PasswordChangeDialog(QDialog):
         self.accept()
 
 class AccountWindow(QMainWindow):
-    def __init__(self, nombre_usuario="[Nombre de Cuenta]", go_to_start=None):
+    def __init__(self, user_id=None, go_to_start=None):
         super().__init__()
-        self.nombre_usuario = nombre_usuario
+        self.user_id = user_id
         self.go_to_start = go_to_start
+        self.user_service = UserService()
+        
+        # Obtener información del usuario
+        self.nombre_usuario = "[Usuario]"  # Valor por defecto
+        if self.user_id:
+            try:
+                user_info = self.user_service.get_user_info(self.user_id)
+                if user_info["success"]:
+                    self.nombre_usuario = user_info["username"]
+                    print(f"✅ Usuario cargado: {self.nombre_usuario}")
+                else:
+                    print(f"❌ Error cargando usuario: {user_info.get('message', 'Error desconocido')}")
+            except Exception as e:
+                print(f"❌ Error inesperado cargando usuario: {e}")
+        
         self.setWindowTitle("Cuenta - FortiFile")
         self.resize(900, 500)
 
@@ -176,32 +181,24 @@ class AccountWindow(QMainWindow):
 
         # Botones de gestión
         botones_layout = QHBoxLayout()
-        botones_layout.setSpacing(20)
+        botones_layout.setSpacing(30)
 
-        editar_btn = QPushButton("Modificar Nombre")
-        editar_btn.setMinimumWidth(160)
-        editar_btn.setMinimumHeight(40)
-        editar_btn.setStyleSheet(self.estilo_boton())
-        editar_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        editar_btn.clicked.connect(self.abrir_dialogo_edicion)
-
-        eliminar_btn = QPushButton("Eliminar Cuenta")
-        eliminar_btn.setMinimumWidth(160)
-        eliminar_btn.setMinimumHeight(40)
-        eliminar_btn.setStyleSheet(self.estilo_boton())
-        eliminar_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        eliminar_btn.clicked.connect(self.confirmar_eliminacion)
-
-        cambiar_btn = QPushButton("Modificar Contraseña")
-        cambiar_btn.setMinimumWidth(160)
-        cambiar_btn.setMinimumHeight(40)
+        cambiar_btn = QPushButton("Cambiar Contraseña")
+        cambiar_btn.setMinimumWidth(180)
+        cambiar_btn.setMinimumHeight(45)
         cambiar_btn.setStyleSheet(self.estilo_boton())
         cambiar_btn.setCursor(QCursor(Qt.PointingHandCursor))
         cambiar_btn.clicked.connect(self.abrir_dialogo_contrasena)
 
-        botones_layout.addWidget(editar_btn)
-        botones_layout.addWidget(eliminar_btn)
+        eliminar_btn = QPushButton("Eliminar Cuenta")
+        eliminar_btn.setMinimumWidth(180)
+        eliminar_btn.setMinimumHeight(45)
+        eliminar_btn.setStyleSheet(self.estilo_boton_eliminar())
+        eliminar_btn.setCursor(QCursor(Qt.PointingHandCursor))
+        eliminar_btn.clicked.connect(self.confirmar_eliminacion)
+
         botones_layout.addWidget(cambiar_btn)
+        botones_layout.addWidget(eliminar_btn)
         container_layout.addLayout(botones_layout)
 
         outer_layout.addStretch()
@@ -215,48 +212,34 @@ class AccountWindow(QMainWindow):
             QPushButton {{
                 background-color: {colors.GRAY_DARK};
                 color: {colors.WHITE};
-                padding: 10px 18px;
-                border-radius: 6px;
-                font-size: 15px;
-                min-width: 160px;
-                min-height: 40px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 180px;
+                min-height: 45px;
             }}
             QPushButton:hover {{
                 background-color: {colors.LIGHT};
             }}
         """
-
-    def abrir_dialogo_edicion(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Modificar Nombre")
-        dialog.setFixedSize(350, 180)
-        dialog.setStyleSheet(f"background-color: {colors.GRAY}; color: {colors.WHITE}; font-size: 15px;")
-        layout = QVBoxLayout(dialog)
-        label = QLabel("¿A qué nombre desea cambiar?")
-        label.setStyleSheet("font-size: 16px; color: white;")
-        layout.addWidget(label)
-        input_nombre = QLineEdit()
-        input_nombre.setStyleSheet("background-color: #333; color: white; padding: 6px; font-size: 15px; border-radius: 4px;")
-        layout.addWidget(input_nombre)
-        botones = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        botones.button(QDialogButtonBox.Ok).setText("Aceptar")
-        botones.button(QDialogButtonBox.Cancel).setText("Cancelar")
-        layout.addWidget(botones)
-        botones.accepted.connect(dialog.accept)
-        botones.rejected.connect(dialog.reject)
-        dialog.setLayout(layout)
-        if dialog.exec_() == QDialog.Accepted:
-            nuevo_nombre = input_nombre.text()
-            if nuevo_nombre:
-                confirm = QMessageBox(self)
-                confirm.setWindowTitle("Confirmar cambio")
-                confirm.setText(f"¿Está seguro de cambiar el nombre a '{nuevo_nombre}'?")
-                confirm.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                confirm.setStyleSheet(f"background-color: {colors.DARKEST}; color: {colors.WHITE}; font-size: 15px;")
-                result = confirm.exec_()
-                if result == QMessageBox.Yes:
-                    self.nombre_usuario = nuevo_nombre
-                    self.saludo_label.setText(f"Bienvenido/a, <b>{self.nombre_usuario}</b>")
+    
+    def estilo_boton_eliminar(self):
+        return f"""
+            QPushButton {{
+                background-color: #d32f2f;
+                color: {colors.WHITE};
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 180px;
+                min-height: 45px;
+            }}
+            QPushButton:hover {{
+                background-color: #b71c1c;
+            }}
+        """
 
     def abrir_dialogo_contrasena(self):
         dialog = PasswordChangeDialog(self)

@@ -10,6 +10,7 @@ from ui.login_view import LoginView
 from ui.start_view import StartView
 from ui.register_view import RegisterView
 from ui.file_view import FileManagerUI  # Asegúrate que el archivo se llame así
+from ui.account_view import AccountWindow
 
 class MainApp(QStackedWidget):
     def __init__(self):
@@ -23,6 +24,7 @@ class MainApp(QStackedWidget):
 
         self.start_view = StartView(self.show_login_view)
         self.file_view = FileManagerUI(on_logout=self.show_start_view, go_to_start=self.show_start_view)
+        self.account_view = None  # Se creará cuando sea necesario
         self.login_view = LoginView(self.handle_login_success, self.show_register_view)
         self.register_view = RegisterView(self.show_login_view, self.show_login_view)
 
@@ -46,21 +48,38 @@ class MainApp(QStackedWidget):
             new_file_view = FileManagerUI(
                 on_logout=self.handle_logout, 
                 go_to_start=self.show_start_view,
+                go_to_account=self.show_account_view,
                 user_id=self.current_user_id
             )
             
-            # Reemplazar la vista anterior
+            # Crear nueva instancia de AccountView con el user_id correcto
+            new_account_view = AccountWindow(
+                user_id=self.current_user_id,
+                go_to_start=self.show_file_view
+            )
+            
+            # Reemplazar las vistas anteriores
             old_file_view_index = None
+            old_account_view_index = None
+            
             for i in range(self.count()):
-                if isinstance(self.widget(i), FileManagerUI):
+                widget = self.widget(i)
+                if isinstance(widget, FileManagerUI):
                     old_file_view_index = i
-                    break
+                elif isinstance(widget, AccountWindow):
+                    old_account_view_index = i
             
             if old_file_view_index is not None:
                 self.removeWidget(self.widget(old_file_view_index))
+            if old_account_view_index is not None:
+                self.removeWidget(self.widget(old_account_view_index))
             
+            # Agregar las nuevas vistas
             self.file_view = new_file_view
+            self.account_view = new_account_view
             self.addWidget(self.file_view)
+            self.addWidget(self.account_view)
+            
             self.show_file_view()
             
             print(f"✅ Login exitoso para usuario ID: {self.current_user_id}")
@@ -72,6 +91,15 @@ class MainApp(QStackedWidget):
     def handle_logout(self):
         """Maneja el logout y limpia la información del usuario."""
         self.current_user_id = None
+        
+        # Limpiar las vistas que dependen del usuario
+        if self.account_view:
+            try:
+                self.removeWidget(self.account_view)
+                self.account_view = None
+            except:
+                pass
+                
         self.show_start_view()
 
     def show_login_view(self):
@@ -82,6 +110,12 @@ class MainApp(QStackedWidget):
 
     def show_file_view(self):
         self.setCurrentWidget(self.file_view)
+
+    def show_account_view(self):
+        if self.account_view:
+            self.setCurrentWidget(self.account_view)
+        else:
+            print("❌ AccountView no está disponible")
 
     def show_start_view(self):
         self.setCurrentWidget(self.start_view)

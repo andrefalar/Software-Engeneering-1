@@ -67,10 +67,11 @@ class FilterDialog(QDialog):
 
 class FileManagerUI(QMainWindow):
     """Interfaz principal para gestión de archivos."""
-    def __init__(self, on_logout=None, go_to_start=None, user_id=None):
+    def __init__(self, on_logout=None, go_to_start=None, go_to_account=None, user_id=None):
         super().__init__()
         self.on_logout = on_logout
         self.go_to_start = go_to_start
+        self.go_to_account = go_to_account  # Callback para navegar a cuenta
         self.user_id = user_id  # ID del usuario actual
         self.file_service = FileService()  # Inicializar el servicio de archivos
         self.setWindowTitle("FortiFile")
@@ -134,7 +135,7 @@ class FileManagerUI(QMainWindow):
             }}
         """
 
-        self.link_inicio = QLabel("Inicio")
+        self.link_inicio = QLabel("Cerrar Sesión")
         self.link_inicio.setStyleSheet(link_style)
         self.link_inicio.setCursor(QCursor(Qt.PointingHandCursor))
         self.link_inicio.mousePressEvent = self.confirm_logout
@@ -316,9 +317,8 @@ class FileManagerUI(QMainWindow):
             self.on_logout()
 
     def confirm_account_details(self, event):
-        self.close()
-        self.account_window = AccountWindow(go_to_start=self.go_to_start)
-        self.account_window.show()
+        if callable(self.go_to_account):
+            self.go_to_account()
 
     def refresh_file_list(self):
         search_text = self.search_bar.text().lower()
