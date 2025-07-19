@@ -41,34 +41,39 @@ class RegisterView(QWidget):
                 background-color: {colors.DARKEST};
                 font-family: '{fonts.BODY_FONT}';
                 color: {colors.WHITE};
+                font-size: 14px;
             }}
             QLineEdit {{
                 background-color: {colors.DARK};
                 color: {colors.WHITE};
                 border: 1px solid {colors.GRAY_LIGHT};
-                border-radius: 4px;
-                padding: 6px;
+                border-radius: 6px;
+                padding: 10px 12px;
+                font-size: 14px;
             }}
             QPushButton {{
                 background-color: {colors.DARK};
                 color: {colors.WHITE};
                 border: none;
-                padding: 8px 16px;
+                padding: 12px 20px;
+                font-size: 14px;
+                border-radius: 6px;
             }}
             QPushButton:hover {{
                 background-color: {colors.GRAY};
             }}
             QLabel {{
                 font-family: '{fonts.BODY_FONT}';
+                font-size: 14px;
             }}
         """)
 
         title_label = QLabel("REGISTRO")
-        title_label.setFont(QFont(fonts.TITLE_FONT, 18, QFont.Bold))
+        title_label.setFont(QFont(fonts.TITLE_FONT, 24, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
 
         self.error_label = QLabel("")
-        self.error_label.setStyleSheet(f"color: {getattr(colors, 'ERROR', '#FF5555')}; font-size: 11px;")
+        self.error_label.setStyleSheet(f"color: {getattr(colors, 'ERROR', '#FF5555')}; font-size: 13px;")
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.hide()
 
@@ -97,7 +102,7 @@ class RegisterView(QWidget):
                 color: {colors.GRAY_LIGHT};
                 background: none;
                 border: none;
-                font-size: 10px;
+                font-size: 12px;
             }}
             QPushButton:hover {{
                 color: {colors.GRAY};
@@ -105,22 +110,38 @@ class RegisterView(QWidget):
         """)
         login_button.clicked.connect(self.handle_login_clicked)
 
+        # Establecer ancho fijo para los campos de entrada
+        self.username_input.setFixedWidth(500)
+        self.password_input.setFixedWidth(500)
+        self.confirm_password_input.setFixedWidth(500)
+        register_button.setFixedWidth(500)
+
         form_layout = QVBoxLayout()
         form_layout.setSpacing(10)
         form_layout.addWidget(title_label)
         form_layout.addSpacing(10)
         form_layout.addWidget(self.error_label)
-        form_layout.addWidget(self.username_input)
-        form_layout.addWidget(self.password_input)
-        form_layout.addWidget(self.confirm_password_input)
-        form_layout.addWidget(register_button)
+        form_layout.addWidget(self.username_input, alignment=Qt.AlignCenter)
+        form_layout.addWidget(self.password_input, alignment=Qt.AlignCenter)
+        form_layout.addWidget(self.confirm_password_input, alignment=Qt.AlignCenter)
+        form_layout.addWidget(register_button, alignment=Qt.AlignCenter)
         form_layout.addWidget(login_button, alignment=Qt.AlignCenter)
+
+        # Layout principal con espaciadores horizontales para centrar el formulario
+        center_layout = QHBoxLayout()
+        center_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        
+        form_widget = QWidget()
+        form_widget.setLayout(form_layout)
+        center_layout.addWidget(form_widget)
+        
+        center_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
         outer_layout = QVBoxLayout()
         outer_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        outer_layout.addLayout(form_layout)
+        outer_layout.addLayout(center_layout)
         outer_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        outer_layout.setContentsMargins(100, 40, 100, 40)
+        outer_layout.setContentsMargins(40, 40, 40, 40)
 
         self.setLayout(outer_layout)
         self.username_input.setFocus()

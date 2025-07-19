@@ -136,7 +136,7 @@ class PasswordChangeDialog(QDialog):
         self.user_id = user_id
         self.user_service = user_service
         self.setWindowTitle("Cambiar Contraseña")
-        self.setFixedSize(370, 220)
+        self.setFixedSize(512, 303)
         self.setStyleSheet("background-color: #595551; color: white; font-size: 15px;")
         layout = QVBoxLayout(self)
         etiquetas = ["Contraseña actual", "Nueva contraseña (8+ caracteres, 1 mayúscula, 1 minúscula)", "Confirmar nueva contraseña"]
