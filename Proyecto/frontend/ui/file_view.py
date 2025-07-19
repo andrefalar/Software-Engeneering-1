@@ -397,48 +397,163 @@ class FileManagerUI(QMainWindow):
             print(f"❌ Error en add_file: {e}")
 
     def delete_checked_files(self):
-        checked = [i for i in range(self.file_list.count())
-                   if self.file_list.item(i).checkState() == Qt.Checked]
-        if not checked:
+        """Elimina los archivos seleccionados usando el backend."""
+        if not self.user_id:
+            QMessageBox.warning(self, "Error", "No hay usuario logueado.")
+            return
+            
+        # Obtener archivos seleccionados con sus IDs
+        checked_files = []
+        for i in range(self.file_list.count()):
+            item = self.file_list.item(i)
+            if item.checkState() == Qt.Checked:
+                file_name = item.text()
+                # Buscar el archivo correspondiente en files_data para obtener el ID
+                file_info = next((f for f in self.files_data if f["name"] == file_name), None)
+                if file_info:
+                    checked_files.append({
+                        "name": file_name,
+                        "id": file_info["id"]
+                    })
+        
+        if not checked_files:
             QMessageBox.information(self, "Eliminar", "No hay archivos seleccionados para eliminar.")
             return
+            
+        # Confirmar eliminación
         reply = QMessageBox.question(
             self,
             "Confirmar eliminación",
-            "¿Seguro que deseas eliminar los archivos seleccionados?",
+            f"¿Seguro que deseas eliminar {len(checked_files)} archivo(s) seleccionado(s)?\n\nEsta acción no se puede deshacer.",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No
         )
         if reply != QMessageBox.Yes:
             return
-        for i in reversed(checked):
-            item = self.file_list.item(i)
-            self.file_list.takeItem(i)
-            self.files_data = [f for f in self.files_data if f["name"] != item.text()]
+        
+        # Eliminar archivos uno por uno usando el backend
+        deleted_files = []
+        failed_files = []
+        
+        for file_info in checked_files:
+            try:
+                result = self.file_service.delete_file(self.user_id, file_info["id"])
+                
+                if result["success"]:
+                    deleted_files.append(file_info["name"])
+                    print(f"✅ Archivo eliminado: {file_info['name']}")
+                else:
+                    failed_files.append(f"{file_info['name']}: {result['message']}")
+                    print(f"❌ Error eliminando {file_info['name']}: {result['message']}")
+                    
+            except Exception as e:
+                failed_files.append(f"{file_info['name']}: Error inesperado - {str(e)}")
+                print(f"❌ Error inesperado eliminando {file_info['name']}: {e}")
+        
+        # Mostrar resultados
+        if deleted_files and not failed_files:
+            QMessageBox.information(
+                self, 
+                "Eliminación Exitosa", 
+                f"Se eliminaron correctamente {len(deleted_files)} archivo(s)."
+            )
+        elif deleted_files and failed_files:
+            message = f"Eliminados correctamente: {len(deleted_files)} archivo(s)\n\n"
+            message += "Errores en:\n" + "\n".join(failed_files)
+            QMessageBox.warning(self, "Eliminación Parcial", message)
+        else:
+            message = "No se pudo eliminar ningún archivo:\n\n" + "\n".join(failed_files)
+            QMessageBox.critical(self, "Error de Eliminación", message)
+        
+        # Recargar la lista de archivos para reflejar los cambios
+        self.load_user_files()
 
     def download_checked_files(self):
-        checked_files = [self.files_data[i] for i in range(self.file_list.count())
-                         if self.file_list.item(i).checkState() == Qt.Checked]
+        """Descarga los archivos seleccionados usando el backend con descifrado automático."""
+        if not self.user_id:
+            QMessageBox.warning(self, "Error", "No hay usuario logueado.")
+            return
+            
+        # Obtener archivos seleccionados con sus IDs
+        checked_files = []
+        for i in range(self.file_list.count()):
+            item = self.file_list.item(i)
+            if item.checkState() == Qt.Checked:
+                file_name = item.text()
+                # Buscar el archivo correspondiente en files_data para obtener el ID
+                file_info = next((f for f in self.files_data if f["name"] == file_name), None)
+                if file_info:
+                    checked_files.append({
+                        "name": file_name,
+                        "id": file_info["id"]
+                    })
+        
         if not checked_files:
             QMessageBox.information(self, "Descargar", "No hay archivos seleccionados para descargar.")
             return
+            
+        # Confirmar descarga
         reply = QMessageBox.question(
             self,
             "Confirmar descarga",
-            "¿Seguro que deseas descargar los archivos seleccionados?",
+            f"¿Seguro que deseas descargar {len(checked_files)} archivo(s) seleccionado(s)?",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No
         )
         if reply != QMessageBox.Yes:
             return
+            
+        # Seleccionar carpeta de destino
         dest_dir = QFileDialog.getExistingDirectory(self, "Seleccionar carpeta de destino")
-        if dest_dir:
-            for file_info in checked_files:
-                src = file_info["path"]
-                dst = os.path.join(dest_dir, file_info["name"])
-                try:
-                    with open(src, "rb") as fsrc, open(dst, "wb") as fdst:
-                        fdst.write(fsrc.read())
-                except Exception as e:
-                    QMessageBox.warning(self, "Error", f"No se pudo copiar {file_info['name']}: {e}")
-            QMessageBox.information(self, "Descargar", "Archivos descargados exitosamente.")
+        if not dest_dir:
+            return
+        
+        # Descargar archivos uno por uno usando el backend
+        downloaded_files = []
+        failed_files = []
+        
+        for file_info in checked_files:
+            try:
+                output_path = os.path.join(dest_dir, file_info["name"])
+                
+                # Verificar si el archivo ya existe y preguntar al usuario
+                if os.path.exists(output_path):
+                    reply = QMessageBox.question(
+                        self,
+                        "Archivo Existente",
+                        f"El archivo '{file_info['name']}' ya existe en el destino.\n¿Deseas sobrescribirlo?",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No
+                    )
+                    if reply != QMessageBox.Yes:
+                        failed_files.append(f"{file_info['name']}: Cancelado por el usuario")
+                        continue
+                
+                # Usar el servicio del backend para descargar y descifrar
+                result = self.file_service.download_file(self.user_id, file_info["id"], output_path)
+                
+                if result["success"]:
+                    downloaded_files.append(file_info["name"])
+                    print(f"✅ Archivo descargado: {file_info['name']}")
+                else:
+                    failed_files.append(f"{file_info['name']}: {result['message']}")
+                    print(f"❌ Error descargando {file_info['name']}: {result['message']}")
+                    
+            except Exception as e:
+                failed_files.append(f"{file_info['name']}: Error inesperado - {str(e)}")
+                print(f"❌ Error inesperado descargando {file_info['name']}: {e}")
+        
+        # Mostrar resultados
+        if downloaded_files and not failed_files:
+            QMessageBox.information(
+                self, 
+                "Descarga Exitosa", 
+                f"Se descargaron correctamente {len(downloaded_files)} archivo(s) en:\n{dest_dir}"
+            )
+        elif downloaded_files and failed_files:
+            message = f"Descargados correctamente: {len(downloaded_files)} archivo(s)\n\n"
+            message += "Errores en:\n" + "\n".join(failed_files)
+            QMessageBox.warning(self, "Descarga Parcial", message)
+        else:
+            message = "No se pudo descargar ningún archivo:\n\n" + "\n".join(failed_files)
+            QMessageBox.critical(self, "Error de Descarga", message)
