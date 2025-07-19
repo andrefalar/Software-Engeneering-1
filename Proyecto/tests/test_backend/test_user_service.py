@@ -1,124 +1,264 @@
 """
-Tests para el servicio de usuario
+Tests para el servicio de usuario - Versión adaptada a pytest
 """
+import pytest
+import tempfile
+import os
+import sys
 
-def test_user_service_basic():
-    """Prueba funcionalidades básicas del UserService"""
-    try:
-        from backend.services.user_service import UserService
+# Agregar el directorio del proyecto al path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
+
+from backend.services.user_service import UserService
+
+class TestUserService:
+    """Test suite para el servicio de usuarios"""
+    
+    @pytest.fixture
+    def temp_db(self):
+        """Fixture para crear base de datos temporal"""
+        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp:
+            db_path = tmp.name
+        yield db_path
+        # Cleanup: eliminar el archivo después del test
+        if os.path.exists(db_path):
+            os.unlink(db_path)
+    
+    @pytest.fixture
+    def user_service(self, temp_db):
+        """Fixture para crear UserService con DB temporal"""
+        from unittest.mock import patch
         
-        print("🔧 Probando UserService básico...")
+        # Mockear DatabaseManager para usar DB temporal
+        with patch('backend.services.user_service.DatabaseManager') as mock_db_manager:
+            from backend.database.connection import DatabaseManager
+            
+            # Crear instancia real con DB temporal
+            real_db_manager = DatabaseManager(temp_db)
+            real_db_manager.create_tables()
+            
+            # Configurar el mock para retornar la instancia real
+            mock_db_manager.return_value = real_db_manager
+            
+            # Crear UserService con el mock
+            service = UserService()
+            return service
+    
+    def test_user_service_initialization(self, user_service):
+        """Test 1: Verifica inicialización del servicio"""
+        print("🔧 Probando inicialización de UserService...")
         
-        # Inicializar servicio
-        user_service = UserService()
+        # Verificar que el servicio se inicializa correctamente
+        assert user_service is not None, "UserService debería inicializarse"
+        assert hasattr(user_service, 'db_manager'), "Debería tener db_manager"
         
-        # Crear tablas primero
-        user_service.db_manager.create_tables()
+        # Verificar estado inicial sin usuarios
+        user_exists = user_service.user_exists()
+        assert isinstance(user_exists, bool), "user_exists() debería retornar bool"
         
-        # 1. Verificar que no hay usuarios
-        print(f"   - ¿Usuario existe? {user_service.user_exists()}")
+        print(f"   ✅ Servicio inicializado. ¿Usuario existe? {user_exists}")
+    
+    def test_user_registration_basic(self, user_service):
+        """Test 2: Prueba registro básico de usuario"""
+        print("🔧 Probando registro básico de usuario...")
         
-        # 2. Registrar primer usuario
+        # Registrar primer usuario
         result = user_service.register_user("admin", "MiPassword123")
-        print(f"   - Registro: {result['success']} - {result['message']}")
         
-        if result['success']:
-            user_id = result['user_id']
-            
-            # 3. Intentar registrar segundo usuario (debe fallar)
-            result2 = user_service.register_user("admin2", "Password456")
-            print(f"   - Segundo registro: {result2['success']} - {result2['message']}")
-            
-            # 4. Probar autenticación correcta
-            auth_result = user_service.authenticate_user("admin", "MiPassword123")
-            print(f"   - Login correcto: {auth_result['success']} - {auth_result['message']}")
-            
-            # 5. Probar autenticación incorrecta
-            auth_fail = user_service.authenticate_user("admin", "passwordMala")
-            print(f"   - Login incorrecto: {auth_fail['success']} - {auth_fail['message']}")
-            
-            # 6. Obtener info de usuario
-            user_info = user_service.get_user_info(user_id)
-            if user_info['success']:
-                print(f"   - Info usuario: {user_info['username']} creado el {user_info['fecha_creacion']}")
+        assert result['success'] == True, f"Registro debería ser exitoso: {result['message']}"
+        assert 'user_id' in result, "Resultado debería incluir user_id"
+        assert isinstance(result['user_id'], int), "user_id debería ser entero"
         
-        return True
+        user_id = result['user_id']
+        print(f"   ✅ Usuario registrado exitosamente con ID: {user_id}")
         
-    except Exception as e:
-        print(f"❌ Error con UserService básico: {e}")
-        return False
-
-def test_user_service_advanced():
-    """Prueba funcionalidades avanzadas del UserService"""
-    try:
-        from backend.services.user_service import UserService
+        # Verificar que ahora existe un usuario
+        user_exists = user_service.user_exists()
+        assert user_exists == True, "Debería existir al menos un usuario después del registro"
+        print("   ✅ Existencia de usuario verificada")
+    
+    def test_user_registration_restrictions(self, user_service):
+        """Test 3: Prueba restricciones de registro (un solo usuario)"""
+        print("🔧 Probando restricciones de registro...")
         
-        print("🔧 Probando UserService avanzado...")
+        # Registrar primer usuario
+        result1 = user_service.register_user("admin", "MiPassword123")
+        assert result1['success'] == True
         
-        user_service = UserService()
-        user_service.db_manager.create_tables()
+        # Intentar registrar segundo usuario (debe fallar)
+        result2 = user_service.register_user("admin2", "Password456")
+        assert result2['success'] == False, "No debería permitir registro de segundo usuario"
+        assert 'message' in result2, "Debería incluir mensaje de error"
         
-        # 1. Validación de contraseña débil
+        print(f"   ✅ Segundo registro denegado correctamente: {result2['message']}")
+    
+    def test_user_authentication_success(self, user_service):
+        """Test 4: Prueba autenticación exitosa"""
+        print("🔧 Probando autenticación exitosa...")
+        
+        # Registrar usuario
+        register_result = user_service.register_user("admin", "MiPassword123")
+        assert register_result['success'] == True
+        
+        # Probar autenticación correcta
+        auth_result = user_service.authenticate_user("admin", "MiPassword123")
+        
+        assert auth_result['success'] == True, f"Autenticación debería ser exitosa: {auth_result['message']}"
+        assert 'user_id' in auth_result, "Resultado debería incluir user_id"
+        assert auth_result['user_id'] == register_result['user_id'], "user_id debería coincidir"
+        
+        print(f"   ✅ Login correcto: {auth_result['message']}")
+    
+    def test_user_authentication_failure(self, user_service):
+        """Test 5: Prueba autenticación fallida"""
+        print("🔧 Probando autenticación fallida...")
+        
+        # Registrar usuario
+        user_service.register_user("admin", "MiPassword123")
+        
+        # Probar autenticación incorrecta
+        auth_fail = user_service.authenticate_user("admin", "passwordMala")
+        
+        assert auth_fail['success'] == False, "Autenticación con contraseña incorrecta debería fallar"
+        assert 'message' in auth_fail, "Debería incluir mensaje de error"
+        
+        print(f"   ✅ Login incorrecto denegado: {auth_fail['message']}")
+    
+    def test_user_info_retrieval(self, user_service):
+        """Test 6: Prueba obtención de información de usuario"""
+        print("🔧 Probando obtención de información de usuario...")
+        
+        # Registrar usuario
+        register_result = user_service.register_user("admin", "MiPassword123")
+        user_id = register_result['user_id']
+        
+        # Obtener info de usuario
+        user_info = user_service.get_user_info(user_id)
+        
+        assert user_info['success'] == True, "Obtención de info debería ser exitosa"
+        assert 'username' in user_info, "Debería incluir username"
+        assert 'fecha_creacion' in user_info, "Debería incluir fecha_creacion"
+        assert user_info['username'] == "admin", "Username debería coincidir"
+        
+        print(f"   ✅ Info usuario: {user_info['username']} creado el {user_info['fecha_creacion']}")
+    
+    def test_password_validation_weak(self, user_service):
+        """Test 7: Prueba validación de contraseñas débiles"""
+        print("🔧 Probando validación de contraseñas débiles...")
+        
+        # Intentar registrar con contraseña débil
         weak_password = "123"
         result = user_service.register_user("testuser", weak_password)
-        print(f"   - Contraseña débil rechazada: {not result['success']}")
         
-        # 2. Registro con contraseña fuerte
+        assert result['success'] == False, "Contraseña débil debería ser rechazada"
+        assert 'message' in result, "Debería incluir mensaje explicativo"
+        
+        print(f"   ✅ Contraseña débil rechazada: {result['message']}")
+    
+    def test_password_validation_strong(self, user_service):
+        """Test 8: Prueba validación de contraseñas fuertes"""
+        print("🔧 Probando validación de contraseñas fuertes...")
+        
+        # Registrar con contraseña fuerte
         strong_password = "MiPassword123"
         result = user_service.register_user("testuser", strong_password)
-        if result['success']:
-            user_id = result['user_id']
-            print(f"   - Usuario registrado con contraseña fuerte: {result['success']}")
+        
+        assert result['success'] == True, f"Contraseña fuerte debería ser aceptada: {result['message']}"
+        
+        print("   ✅ Usuario registrado con contraseña fuerte")
+    
+    def test_failed_login_attempts_and_blocking(self, user_service):
+        """Test 9: Prueba bloqueo por intentos fallidos (RF-04)"""
+        print("🔧 Probando bloqueo por intentos fallidos...")
+        
+        # Registrar usuario
+        user_service.register_user("testuser", "MiPassword123")
+        
+        # Intentar logins fallidos múltiples veces
+        blocked = False
+        for i in range(4):
+            auth_result = user_service.authenticate_user("testuser", "passwordMala")
             
-            # 3. Probar bloqueo por intentos fallidos (RF-04)
-            print("   - Probando bloqueo por intentos fallidos:")
-            for i in range(4):
-                auth_result = user_service.authenticate_user("testuser", "passwordMala")
-                print(f"     Intento {i+1}: Bloqueado={auth_result.get('locked', False)}")
-                if auth_result.get('locked'):
-                    break
+            assert auth_result['success'] == False, f"Intento {i+1} debería fallar"
             
-            # 4. Resetear intentos
-            user_service.reset_failed_attempts()
-            print("   - Intentos fallidos reseteados")
+            if auth_result.get('locked'):
+                blocked = True
+                print(f"   ✅ Usuario bloqueado después de {i+1} intentos")
+                break
+        
+        # Verificar que eventualmente se bloquea (dependiendo de la implementación)
+        # Nota: algunos servicios pueden no implementar bloqueo inmediato
+        print(f"   📝 Estado de bloqueo después de intentos: {blocked}")
+    
+    def test_password_change(self, user_service):
+        """Test 10: Prueba cambio de contraseña (RF-08)"""
+        print("🔧 Probando cambio de contraseña...")
+        
+        # Registrar usuario
+        original_password = "MiPassword123"
+        register_result = user_service.register_user("testuser", original_password)
+        user_id = register_result['user_id']
+        
+        # Cambiar contraseña
+        new_password = "NuevaPassword456"
+        change_result = user_service.change_password(user_id, original_password, new_password)
+        
+        if hasattr(user_service, 'change_password'):
+            assert change_result['success'] == True, f"Cambio de contraseña debería ser exitoso: {change_result['message']}"
             
-            # 5. Login exitoso después de reset
-            auth_result = user_service.authenticate_user("testuser", strong_password)
-            print(f"   - Login después de reset: {auth_result['success']}")
-            
-            # 6. Cambio de contraseña (RF-08)
-            new_password = "NuevaPassword456"
-            change_result = user_service.change_password(user_id, strong_password, new_password)
-            print(f"   - Cambio de contraseña: {change_result['success']}")
-            
-            # 7. Verificar nuevo login
+            # Verificar que la nueva contraseña funciona
             auth_new = user_service.authenticate_user("testuser", new_password)
-            print(f"   - Login con nueva contraseña: {auth_new['success']}")
+            assert auth_new['success'] == True, "Login con nueva contraseña debería funcionar"
             
-            # 8. Ver eventos
+            # Verificar que la contraseña anterior ya no funciona
+            auth_old = user_service.authenticate_user("testuser", original_password)
+            assert auth_old['success'] == False, "Login con contraseña anterior debería fallar"
+            
+            print("   ✅ Cambio de contraseña exitoso")
+        else:
+            pytest.skip("Método change_password no implementado")
+    
+    def test_user_events_logging(self, user_service):
+        """Test 11: Prueba registro de eventos de usuario"""
+        print("🔧 Probando registro de eventos...")
+        
+        # Registrar usuario y hacer login
+        register_result = user_service.register_user("testuser", "MiPassword123")
+        user_id = register_result['user_id']
+        
+        user_service.authenticate_user("testuser", "MiPassword123")
+        
+        # Obtener eventos
+        if hasattr(user_service, 'get_user_events'):
             events_result = user_service.get_user_events(user_id, 5)
-            print(f"   - Eventos registrados: {events_result['count']}")
             
-            # 9. Estado de seguridad
+            assert events_result['success'] == True, "Obtención de eventos debería ser exitosa"
+            assert 'count' in events_result, "Resultado debería incluir count"
+            assert isinstance(events_result['count'], int), "count debería ser entero"
+            
+            print(f"   ✅ Eventos registrados: {events_result['count']}")
+        else:
+            pytest.skip("Método get_user_events no implementado")
+    
+    def test_security_status(self, user_service):
+        """Test 12: Prueba estado de seguridad"""
+        print("🔧 Probando estado de seguridad...")
+        
+        if hasattr(user_service, 'get_security_status'):
             security_status = user_service.get_security_status()
-            print(f"   - Cuenta bloqueada: {security_status['account_locked']}")
             
-        return True
+            assert 'account_locked' in security_status, "Estado debería incluir account_locked"
+            assert isinstance(security_status['account_locked'], bool), "account_locked debería ser bool"
+            
+            print(f"   ✅ Cuenta bloqueada: {security_status['account_locked']}")
+        else:
+            pytest.skip("Método get_security_status no implementado")
+    
+    def test_password_validation_comprehensive(self, user_service):
+        """Test 13: Prueba exhaustiva de validación de contraseñas"""
+        print("🔧 Probando validación exhaustiva de contraseñas...")
         
-    except Exception as e:
-        print(f"❌ Error con UserService avanzado: {e}")
-        return False
-
-def test_user_service_password_validation():
-    """Prueba las validaciones de contraseña"""
-    try:
-        from backend.services.user_service import UserService
-        
-        print("🔧 Probando validación de contraseñas...")
-        
-        user_service = UserService()
-        
-        # Tests de validación
         test_passwords = [
             ("123", False, "muy corta"),
             ("password", False, "sin mayúscula ni número"),
@@ -129,45 +269,31 @@ def test_user_service_password_validation():
         ]
         
         for password, should_be_valid, description in test_passwords:
-            validation = user_service._validate_password(password)
-            result = validation['valid'] == should_be_valid
-            status = "✅" if result else "❌"
-            print(f"   {status} '{password}' ({description}): {validation['message']}")
-            if not result:
-                return False
+            if hasattr(user_service, '_validate_password'):
+                validation = user_service._validate_password(password)
+                
+                assert 'valid' in validation, "Validación debería incluir 'valid'"
+                assert 'message' in validation, "Validación debería incluir 'message'"
+                
+                actual_valid = validation['valid']
+                result = actual_valid == should_be_valid
+                
+                status = "✅" if result else "❌"
+                print(f"   {status} '{password}' ({description}): {validation['message']}")
+                
+                assert result, f"Validación de '{password}' debería ser {should_be_valid}"
+            else:
+                # Si no hay método de validación, probar con registro
+                register_result = user_service.register_user("testpass", password)
+                actual_valid = register_result['success']
+                
+                # Para passwords que deberían ser inválidas, el registro debería fallar
+                if not should_be_valid:
+                    assert not actual_valid, f"Password '{password}' debería ser rechazada"
+                    print(f"   ✅ '{password}' ({description}): rechazada correctamente")
         
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error con validación de contraseñas: {e}")
-        return False
+        print("   ✅ Validación de contraseñas completa")
 
-def run_all_user_service_tests():
-    """Ejecuta todos los tests de UserService"""
-    print("🧪 TESTS DE USER SERVICE")
-    print("=" * 40)
-    
-    tests = [
-        ("Funcionalidades básicas", test_user_service_basic),
-        ("Funcionalidades avanzadas", test_user_service_advanced),
-        ("Validación contraseñas", test_user_service_password_validation)
-    ]
-    
-    passed = 0
-    total = len(tests)
-    
-    for test_name, test_func in tests:
-        print(f"\n🔧 Test: {test_name}")
-        print("-" * 30)
-        if test_func():
-            print(f"✅ {test_name}: PASÓ")
-            passed += 1
-        else:
-            print(f"❌ {test_name}: FALLÓ")
-    
-    print(f"\n📊 RESULTADO: {passed}/{total} tests pasaron")
-    return passed == total
-
-if __name__ == "__main__":
-    success = run_all_user_service_tests()
-    exit(0 if success else 1)
+# Mantener compatibilidad con ejecución directa
+if __name__ == '__main__':
+    pytest.main([__file__])

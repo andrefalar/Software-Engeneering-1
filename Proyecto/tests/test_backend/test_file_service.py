@@ -1,234 +1,251 @@
 """
-Tests para el servicio de archivos
+Tests para el servicio de archivos - Versión adaptada a pytest
 """
 import os
+import pytest
+import tempfile
+import shutil
+from unittest import mock
+import sys
 
-def test_file_service_basic():
-    """Prueba funcionalidades básicas del FileService"""
-    try:
-        from backend.services.file_service import FileService
-        from backend.services.user_service import UserService
-        
-        print("🔧 Probando FileService básico...")
-        
-        # Inicializar servicios
+# Agregar el directorio del proyecto al path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
+
+from backend.services.file_service import FileService
+from backend.services.user_service import UserService
+
+class TestFileService:
+    """Test suite para el servicio de archivos"""
+    
+    @pytest.fixture(scope="function")
+    def temp_dir(self):
+        """Fixture para crear directorio temporal para archivos de prueba"""
+        temp_dir = tempfile.mkdtemp()
+        yield temp_dir
+        # Cleanup: eliminar directorio y contenidos
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+    
+    @pytest.fixture
+    def services(self):
+        """Fixture para inicializar servicios"""
         user_service = UserService()
         file_service = FileService()
         
         # Crear tablas
         user_service.db_manager.create_tables()
         
-        # Registrar un usuario para las pruebas
+        return {
+            'user_service': user_service,
+            'file_service': file_service
+        }
+    
+    @pytest.fixture
+    def test_user(self, services):
+        """Fixture para crear un usuario de prueba"""
+        user_service = services['user_service']
+        
+        # Intentar registrar usuario
         user_result = user_service.register_user("fileuser", "FilePassword123")
+        
         if not user_result['success']:
-            # Si usuario ya existe, intentar autenticar
+            # Si usuario ya existe, autenticar
             auth_result = user_service.authenticate_user("fileuser", "FilePassword123")
             user_id = auth_result['user_id'] if auth_result['success'] else 1
         else:
             user_id = user_result['user_id']
         
-        print(f"   - Usuario ID para pruebas: {user_id}")
-        
-        # Crear archivo de prueba
-        test_file_path = "test_file_service.txt"
+        return user_id
+    
+    @pytest.fixture
+    def test_file(self, temp_dir):
+        """Fixture para crear archivo de prueba"""
+        test_file_path = os.path.join(temp_dir, "test_file_service.txt")
         test_content = "Contenido de prueba para FileService\n¡Datos confidenciales!"
         
         with open(test_file_path, 'w') as f:
             f.write(test_content)
-        print(f"   - Archivo de prueba creado: {test_file_path}")
+        
+        return {
+            'path': test_file_path,
+            'content': test_content
+        }
+    
+    def test_file_service_upload_and_download(self, services, test_user, test_file, temp_dir):
+        """Test 1: Prueba subida y descarga de archivos (RF-03, RF-04, RF-06)"""
+        print("🔧 Probando subida y descarga de archivos...")
+        
+        file_service = services['file_service']
+        user_id = test_user
         
         # 1. Subir archivo (RF-03 y RF-04)
-        upload_result = file_service.upload_file(user_id, test_file_path, "documento_prueba.txt")
-        print(f"   - Subida y cifrado: {upload_result['success']}")
+        upload_result = file_service.upload_file(user_id, test_file['path'], "documento_prueba.txt")
         
-        if upload_result['success']:
-            file_id = upload_result['file_id']
-            
-            # 2. Listar archivos (RF-05)
-            files_result = file_service.get_user_files(user_id)
-            print(f"   - Archivos listados: {files_result['count']} archivo(s)")
-            
-            # 3. Info de almacenamiento
-            storage_info = file_service.get_storage_info()
-            if storage_info['success']:
-                print(f"   - Almacenamiento: {storage_info['total_files']} archivos")
-            
-            # 4. Descargar archivo (RF-06)
-            download_path = "downloaded_test_file.txt"
-            download_result = file_service.download_file(user_id, file_id, download_path)
-            print(f"   - Descarga y descifrado: {download_result['success']}")
-            
-            # Verificar contenido
-            if download_result['success']:
-                with open(download_path, 'r') as f:
-                    downloaded_content = f.read()
-                content_match = downloaded_content == test_content
-                print(f"   - Contenido verificado: {content_match}")
-                
-                # Limpiar archivo descargado
-                if os.path.exists(download_path):
-                    os.remove(download_path)
-            
-            # 5. Eliminar archivo (RF-07)
-            delete_result = file_service.delete_file(user_id, file_id)
-            print(f"   - Eliminación segura: {delete_result['success']}")
+        assert upload_result['success'] == True, "La subida del archivo debería ser exitosa"
+        assert 'file_id' in upload_result, "El resultado debería incluir file_id"
         
-        # Limpiar archivo de prueba
-        if os.path.exists(test_file_path):
-            os.remove(test_file_path)
+        file_id = upload_result['file_id']
+        print(f"   ✅ Archivo subido con ID: {file_id}")
         
-        return True
+        # 2. Descargar archivo (RF-06)
+        download_path = os.path.join(temp_dir, "downloaded_test_file.txt")
+        download_result = file_service.download_file(user_id, file_id, download_path)
         
-    except Exception as e:
-        print(f"❌ Error con FileService básico: {e}")
-        return False
-
-def test_file_service_security():
-    """Prueba características de seguridad del FileService"""
-    try:
-        from backend.services.file_service import FileService
-        from backend.services.user_service import UserService
+        assert download_result['success'] == True, "La descarga debería ser exitosa"
+        assert os.path.exists(download_path), "El archivo descargado debería existir"
+        print("   ✅ Archivo descargado exitosamente")
         
-        print("🔧 Probando seguridad de FileService...")
+        # 3. Verificar contenido
+        with open(download_path, 'r') as f:
+            downloaded_content = f.read()
         
-        user_service = UserService()
-        file_service = FileService()
-        user_service.db_manager.create_tables()
+        assert downloaded_content == test_file['content'], "El contenido descargado debería coincidir con el original"
+        print("   ✅ Contenido verificado correctamente")
         
-        # Crear dos usuarios
-        user1_result = user_service.register_user("user1", "Password123")
-        user1_id = user1_result['user_id'] if user1_result['success'] else 1
+        # 4. Limpiar - eliminar archivo
+        delete_result = file_service.delete_file(user_id, file_id)
+        assert delete_result['success'] == True, "La eliminación debería ser exitosa"
+        print("   ✅ Archivo eliminado exitosamente")
+    
+    def test_file_service_list_files(self, services, test_user, test_file):
+        """Test 2: Prueba listado de archivos (RF-05)"""
+        print("🔧 Probando listado de archivos...")
         
-        # Crear archivo de prueba
-        test_file = "security_test.txt"
-        with open(test_file, 'w') as f:
-            f.write("Archivo confidencial del usuario 1")
-        
-        # Usuario 1 sube archivo
-        upload_result = file_service.upload_file(user1_id, test_file, "archivo_privado.txt")
-        if upload_result['success']:
-            file_id = upload_result['file_id']
-            
-            # Verificar que usuario 1 puede ver sus archivos
-            files_user1 = file_service.get_user_files(user1_id)
-            print(f"   - Usuario 1 ve sus archivos: {files_user1['count'] > 0}")
-            
-            # Simular usuario diferente (ID 999) intentando acceder
-            fake_user_id = 999
-            
-            # Intentar descargar archivo de otro usuario (debe fallar)
-            download_result = file_service.download_file(fake_user_id, file_id, "hack_attempt.txt")
-            print(f"   - Acceso denegado a otro usuario: {not download_result['success']}")
-            
-            # Intentar eliminar archivo de otro usuario (debe fallar)
-            delete_result = file_service.delete_file(fake_user_id, file_id)
-            print(f"   - Eliminación denegada a otro usuario: {not delete_result['success']}")
-            
-            # Usuario correcto puede eliminar
-            delete_result = file_service.delete_file(user1_id, file_id)
-            print(f"   - Usuario correcto puede eliminar: {delete_result['success']}")
-        
-        # Limpiar
-        if os.path.exists(test_file):
-            os.remove(test_file)
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error con seguridad FileService: {e}")
-        return False
-
-def test_file_service_encryption():
-    """Prueba que los archivos se cifran correctamente"""
-    try:
-        from backend.services.file_service import FileService
-        from backend.services.user_service import UserService
-        
-        print("🔧 Probando cifrado de archivos...")
-        
-        user_service = UserService()
-        file_service = FileService()
-        user_service.db_manager.create_tables()
-        
-        # Obtener o crear usuario
-        user_result = user_service.register_user("cryptouser", "CryptoPass123")
-        user_id = user_result['user_id'] if user_result['success'] else 1
-        
-        # Crear archivo con contenido específico
-        original_file = "encryption_test.txt"
-        original_content = "CONTENIDO SUPER SECRETO QUE DEBE SER CIFRADO"
-        
-        with open(original_file, 'w') as f:
-            f.write(original_content)
+        file_service = services['file_service']
+        user_id = test_user
         
         # Subir archivo
-        upload_result = file_service.upload_file(user_id, original_file, "archivo_cifrado.txt")
+        upload_result = file_service.upload_file(user_id, test_file['path'], "documento_listado.txt")
+        assert upload_result['success'] == True
+        file_id = upload_result['file_id']
         
-        if upload_result['success']:
-            # Obtener ruta del archivo cifrado
-            files_result = file_service.get_user_files(user_id)
-            if files_result['success'] and files_result['count'] > 0:
-                # Leer archivo cifrado directamente
-                file_info = files_result['files'][0]
-                encrypted_file_path = None
-                
-                # Buscar el archivo en secure_files
-                if os.path.exists("secure_files"):
-                    for filename in os.listdir("secure_files"):
-                        if "archivo_cifrado.txt" in filename:
-                            encrypted_file_path = os.path.join("secure_files", filename)
-                            break
-                
-                if encrypted_file_path and os.path.exists(encrypted_file_path):
-                    with open(encrypted_file_path, 'rb') as f:
-                        encrypted_content = f.read()
-                    
-                    # Verificar que el contenido está cifrado (no es legible)
-                    is_encrypted = original_content.encode() not in encrypted_content
-                    print(f"   - Archivo está cifrado: {is_encrypted}")
-                    print(f"   - Tamaño archivo original: {len(original_content)} bytes")
-                    print(f"   - Tamaño archivo cifrado: {len(encrypted_content)} bytes")
-                
-                # Limpiar - eliminar archivo del sistema
-                file_id = upload_result['file_id']
-                file_service.delete_file(user_id, file_id)
+        # Listar archivos del usuario
+        files_result = file_service.get_user_files(user_id)
         
-        # Limpiar archivo original
-        if os.path.exists(original_file):
-            os.remove(original_file)
+        assert files_result['success'] == True, "El listado debería ser exitoso"
+        assert files_result['count'] >= 1, "Debería haber al menos 1 archivo"
+        assert 'files' in files_result, "El resultado debería incluir la lista de archivos"
         
-        return True
+        print(f"   ✅ Archivos listados: {files_result['count']} archivo(s)")
         
-    except Exception as e:
-        print(f"❌ Error probando cifrado: {e}")
-        return False
+        # Limpiar
+        file_service.delete_file(user_id, file_id)
+    
+    def test_file_service_storage_info(self, services):
+        """Test 3: Prueba información de almacenamiento"""
+        print("🔧 Probando información de almacenamiento...")
+        
+        file_service = services['file_service']
+        
+        storage_info = file_service.get_storage_info()
+        
+        assert storage_info['success'] == True, "La consulta de almacenamiento debería ser exitosa"
+        assert 'total_files' in storage_info, "Debería incluir información de total de archivos"
+        assert isinstance(storage_info['total_files'], int), "total_files debería ser un entero"
+        
+        print(f"   ✅ Almacenamiento: {storage_info['total_files']} archivos")
+    
+    def test_file_service_security_access_control(self, services, test_file, temp_dir):
+        """Test 4: Prueba control de acceso y seguridad"""
+        print("🔧 Probando seguridad y control de acceso...")
+        
+        user_service = services['user_service']
+        file_service = services['file_service']
+        
+        # Crear usuario para la prueba
+        user1_result = user_service.register_user("securityuser1", "Password123")
+        user1_id = user1_result['user_id'] if user1_result['success'] else 1
+        
+        # Subir archivo como usuario 1
+        upload_result = file_service.upload_file(user1_id, test_file['path'], "archivo_privado.txt")
+        assert upload_result['success'] == True
+        file_id = upload_result['file_id']
+        
+        # Verificar que usuario 1 puede ver sus archivos
+        files_user1 = file_service.get_user_files(user1_id)
+        assert files_user1['success'] == True
+        assert files_user1['count'] >= 1, "Usuario 1 debería ver sus archivos"
+        print("   ✅ Usuario puede ver sus propios archivos")
+        
+        # Simular usuario diferente intentando acceder
+        fake_user_id = 999
+        
+        # Intentar descargar archivo de otro usuario (debe fallar)
+        hack_path = os.path.join(temp_dir, "hack_attempt.txt")
+        download_result = file_service.download_file(fake_user_id, file_id, hack_path)
+        assert download_result['success'] == False, "Acceso de otro usuario debería ser denegado"
+        print("   ✅ Acceso denegado correctamente a usuario no autorizado")
+        
+        # Intentar eliminar archivo de otro usuario (debe fallar)
+        delete_result = file_service.delete_file(fake_user_id, file_id)
+        assert delete_result['success'] == False, "Eliminación por otro usuario debería ser denegada"
+        print("   ✅ Eliminación denegada correctamente a usuario no autorizado")
+        
+        # Usuario correcto puede eliminar
+        delete_result = file_service.delete_file(user1_id, file_id)
+        assert delete_result['success'] == True, "Usuario propietario debería poder eliminar"
+        print("   ✅ Usuario propietario puede eliminar correctamente")
+    
+    def test_file_service_encryption_verification(self, services, test_user, test_file, temp_dir):
+        """Test 5: Prueba que los archivos se cifran correctamente"""
+        print("🔧 Probando cifrado de archivos...")
+        
+        file_service = services['file_service']
+        user_id = test_user
+        
+        # Subir archivo
+        upload_result = file_service.upload_file(user_id, test_file['path'], "archivo_cifrado.txt")
+        assert upload_result['success'] == True
+        file_id = upload_result['file_id']
+        
+        # Verificar que existe el archivo cifrado en secure_files
+        secure_files_dir = os.path.join(project_root, 'secure_files')
+        
+        if os.path.exists(secure_files_dir):
+            # Buscar archivos .enc del usuario
+            encrypted_files = [f for f in os.listdir(secure_files_dir) 
+                             if f.startswith(f'user_{user_id}_') and f.endswith('.enc')]
+            
+            assert len(encrypted_files) >= 1, "Debería haber al menos un archivo cifrado"
+            
+            # Verificar que el archivo cifrado no contiene el texto original
+            encrypted_file_path = os.path.join(secure_files_dir, encrypted_files[0])
+            
+            with open(encrypted_file_path, 'rb') as f:
+                encrypted_content = f.read()
+            
+            # El contenido cifrado no debería contener el texto original
+            original_text = test_file['content'].encode()
+            assert original_text not in encrypted_content, "El archivo cifrado no debería contener texto plano"
+            
+            print("   ✅ Archivo correctamente cifrado en disco")
+        
+        # Limpiar
+        file_service.delete_file(user_id, file_id)
+    
+    def test_file_service_invalid_operations(self, services, test_user):
+        """Test 6: Prueba manejo de operaciones inválidas"""
+        print("🔧 Probando manejo de operaciones inválidas...")
+        
+        file_service = services['file_service']
+        user_id = test_user
+        
+        # Intentar descargar archivo inexistente
+        fake_file_id = 99999
+        download_result = file_service.download_file(user_id, fake_file_id, "nonexistent.txt")
+        assert download_result['success'] == False, "Descarga de archivo inexistente debería fallar"
+        
+        # Intentar eliminar archivo inexistente  
+        delete_result = file_service.delete_file(user_id, fake_file_id)
+        assert delete_result['success'] == False, "Eliminación de archivo inexistente debería fallar"
+        
+        # Intentar subir archivo inexistente
+        upload_result = file_service.upload_file(user_id, "nonexistent_file.txt", "test.txt")
+        assert upload_result['success'] == False, "Subida de archivo inexistente debería fallar"
+        
+        print("   ✅ Operaciones inválidas manejadas correctamente")
 
-def run_all_file_service_tests():
-    """Ejecuta todos los tests de FileService"""
-    print("🧪 TESTS DE FILE SERVICE")
-    print("=" * 40)
-    
-    tests = [
-        ("Funcionalidades básicas", test_file_service_basic),
-        ("Seguridad de acceso", test_file_service_security),
-        ("Cifrado de archivos", test_file_service_encryption)
-    ]
-    
-    passed = 0
-    total = len(tests)
-    
-    for test_name, test_func in tests:
-        print(f"\n🔧 Test: {test_name}")
-        print("-" * 30)
-        if test_func():
-            print(f"✅ {test_name}: PASÓ")
-            passed += 1
-        else:
-            print(f"❌ {test_name}: FALLÓ")
-    
-    print(f"\n📊 RESULTADO: {passed}/{total} tests pasaron")
-    return passed == total
-
-if __name__ == "__main__":
-    success = run_all_file_service_tests()
-    exit(0 if success else 1)
+# Mantener compatibilidad con ejecución directa
+if __name__ == '__main__':
+    pytest.main([__file__])
