@@ -50,13 +50,15 @@ class ConfirmDeleteDialog(QDialog):
         self.setLayout(layout)
 
 class PasswordChangeDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, user_id=None, user_service=None, parent=None):
         super().__init__(parent)
+        self.user_id = user_id
+        self.user_service = user_service
         self.setWindowTitle("Cambiar Contraseña")
         self.setFixedSize(370, 220)
         self.setStyleSheet("background-color: #595551; color: white; font-size: 15px;")
         layout = QVBoxLayout(self)
-        etiquetas = ["Contraseña actual", "Nueva contraseña", "Confirmar contraseña"]
+        etiquetas = ["Contraseña actual", "Nueva contraseña (8+ caracteres, 1 mayúscula, 1 minúscula)", "Confirmar nueva contraseña"]
         self.inputs = []
         for texto in etiquetas:
             input_ = QLineEdit()
@@ -79,18 +81,53 @@ class PasswordChangeDialog(QDialog):
         self.boton_aceptar.setEnabled(all([actual, nueva, confirmar]) and nueva == confirmar)
 
     def validar_contrasena(self):
-        _, nueva, confirmar = [i.text() for i in self.inputs]
+        actual, nueva, confirmar = [i.text() for i in self.inputs]
+        
+        # Validar que las contraseñas coincidan
         if nueva != confirmar:
             QMessageBox.critical(self, "Error", "Las contraseñas no coinciden.")
             return
-        QMessageBox.information(self, "Éxito", "Su contraseña ha sido cambiada con éxito.")
-        self.accept()
+        
+        # Validar longitud mínima de contraseña
+        if len(nueva) < 8:
+            QMessageBox.critical(self, "Error", "La nueva contraseña debe tener al menos 8 caracteres.")
+            return
+        
+        # Validar que tenga al menos una letra mayúscula
+        if not any(c.isupper() for c in nueva):
+            QMessageBox.critical(self, "Error", "La nueva contraseña debe contener al menos una letra mayúscula.")
+            return
+        
+        # Validar que tenga al menos una letra minúscula
+        if not any(c.islower() for c in nueva):
+            QMessageBox.critical(self, "Error", "La nueva contraseña debe contener al menos una letra minúscula.")
+            return
+        
+        # Intentar cambiar la contraseña usando el backend
+        if not self.user_service or not self.user_id:
+            QMessageBox.critical(self, "Error", "Error del sistema: No se puede cambiar la contraseña.")
+            return
+        
+        try:
+            # Usar el servicio del backend para cambiar la contraseña
+            result = self.user_service.change_password(self.user_id, actual, nueva)
+            
+            if result["success"]:
+                QMessageBox.information(self, "Éxito", "Su contraseña ha sido cambiada exitosamente.\n\nPor seguridad, debe iniciar sesión nuevamente.")
+                self.accept()  # Cerrar el diálogo exitosamente
+            else:
+                QMessageBox.critical(self, "Error", f"Error al cambiar contraseña: {result['message']}")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error inesperado: {str(e)}")
+            print(f"❌ Error en validar_contrasena: {e}")
 
 class AccountWindow(QMainWindow):
-    def __init__(self, user_id=None, go_to_start=None):
+    def __init__(self, user_id=None, go_to_start=None, on_logout=None):
         super().__init__()
         self.user_id = user_id
         self.go_to_start = go_to_start
+        self.on_logout = on_logout  # Callback para cerrar sesión
         self.user_service = UserService()
         
         # Obtener información del usuario
@@ -242,8 +279,25 @@ class AccountWindow(QMainWindow):
         """
 
     def abrir_dialogo_contrasena(self):
-        dialog = PasswordChangeDialog(self)
-        dialog.exec_()
+        dialog = PasswordChangeDialog(
+            user_id=self.user_id,
+            user_service=self.user_service,
+            parent=self
+        )
+        
+        # Si el diálogo se acepta (contraseña cambiada exitosamente)
+        if dialog.exec_() == QDialog.Accepted:
+            # Cerrar sesión y volver al login
+            QMessageBox.information(
+                self, 
+                "Sesión Cerrada", 
+                "Su contraseña ha sido cambiada exitosamente.\n\nPor seguridad, debe iniciar sesión nuevamente."
+            )
+            
+            # Cerrar la ventana actual y activar el callback de logout
+            self.close()
+            if callable(self.on_logout):
+                self.on_logout()
 
     def confirmar_eliminacion(self):
         confirm = QMessageBox(self)

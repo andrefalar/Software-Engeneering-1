@@ -77,7 +77,7 @@ class RegisterView(QWidget):
         self.username_input.textChanged.connect(self.hide_error)
 
         self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Contraseña")
+        self.password_input.setPlaceholderText("Contraseña (8+ caracteres, 1 mayúscula, 1 minúscula)")
         self.password_input.setEchoMode(QLineEdit.Password)
         self.password_input.textChanged.connect(self.hide_error)
 
@@ -141,6 +141,22 @@ class RegisterView(QWidget):
             
         if password != confirm_password:
             self.error_label.setText("Las contraseñas no coinciden.")
+            self.error_label.show()
+            return
+        
+        # Validaciones de complejidad de contraseña
+        if len(password) < 8:
+            self.error_label.setText("La contraseña debe tener al menos 8 caracteres.")
+            self.error_label.show()
+            return
+        
+        if not any(c.isupper() for c in password):
+            self.error_label.setText("La contraseña debe contener al menos una letra mayúscula.")
+            self.error_label.show()
+            return
+        
+        if not any(c.islower() for c in password):
+            self.error_label.setText("La contraseña debe contener al menos una letra minúscula.")
             self.error_label.show()
             return
             

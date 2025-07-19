@@ -55,7 +55,8 @@ class MainApp(QStackedWidget):
             # Crear nueva instancia de AccountView con el user_id correcto
             new_account_view = AccountWindow(
                 user_id=self.current_user_id,
-                go_to_start=self.show_file_view
+                go_to_start=self.show_file_view,
+                on_logout=self.handle_logout
             )
             
             # Reemplazar las vistas anteriores
