@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
-    QHBoxLayout, QSpacerItem, QSizePolicy
+    QHBoxLayout, QSpacerItem, QSizePolicy, QDialog
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QPixmap
 import os
 import sys
 
@@ -14,6 +14,64 @@ if project_root not in sys.path:
 
 from themes import colors, fonts
 from backend.services.user_service import UserService
+
+
+class SuccessDialog(QDialog):
+    def __init__(self, username, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("¡Registro Exitoso!")
+        self.setFixedSize(450, 350)
+        self.setStyleSheet(f"background-color: {colors.GRAY}; color: {colors.WHITE}; padding: 15px;")
+
+        layout = QVBoxLayout()
+
+        # Logo de éxito
+        logo = QLabel()
+        logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "icon.png")
+        if os.path.exists(logo_path):
+            logo_pixmap = QPixmap(logo_path)
+            logo.setPixmap(logo_pixmap.scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            logo.setText("✅")
+            logo.setStyleSheet("font-size: 60px; color: #4CAF50;")
+        logo.setAlignment(Qt.AlignCenter)
+        layout.addWidget(logo)
+
+        # Mensaje de éxito
+        texto = QLabel(
+            f"¡BIENVENIDO!\n\n"
+            f"Su cuenta '{username}' ha sido creada exitosamente.\n\n"
+            f"Ya puede iniciar sesión en FortiFile y comenzar a:\n"
+            f"• Cifrar y proteger sus archivos\n"
+            f"• Gestionar su información de forma segura\n"
+            f"• Acceder a todas las funciones de la aplicación\n\n"
+            f"¡Gracias por unirse a FortiFile!"
+        )
+        texto.setWordWrap(True)
+        texto.setAlignment(Qt.AlignCenter)
+        texto.setStyleSheet("font-size: 14px; font-weight: bold; color: #4CAF50;")
+        layout.addWidget(texto)
+
+        # Botón de continuar
+        continue_button = QPushButton("Continuar al Login")
+        continue_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: #4CAF50;
+                color: {colors.WHITE};
+                padding: 12px 30px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: bold;
+                margin: 10px;
+            }}
+            QPushButton:hover {{
+                background-color: #45a049;
+            }}
+        """)
+        continue_button.clicked.connect(self.accept)
+        
+        layout.addWidget(continue_button, alignment=Qt.AlignCenter)
+        self.setLayout(layout)
 
 
 class RegisterView(QWidget):
@@ -192,8 +250,12 @@ class RegisterView(QWidget):
             self.password_input.clear()
             self.confirm_password_input.clear()
             
-            if callable(self.on_register_success):
-                self.on_register_success()
+            # Mostrar diálogo de éxito
+            success_dialog = SuccessDialog(username, parent=self)
+            if success_dialog.exec_() == QDialog.Accepted:
+                # Después de cerrar el diálogo, ir al login
+                if callable(self.on_register_success):
+                    self.on_register_success()
         else:
             self.error_label.setText(result["message"])
             self.error_label.show()
