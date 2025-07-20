@@ -1,28 +1,25 @@
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/df009338-ea3e-4e99-bbd7-bb4e2b44d965" width="300" alt="FortiFile Logo"><br>
-</p>
+```markdown
+![FortiFile Logo](https://github.com/user-attachments/assets/df009338-ea3e-4e99-bbd7-bb4e2b44d965)
 
-<h1 align="center">
-  <strong><span style="color:#002147">FORTIFILE</span></strong>
-</h1>
+# **FORTIFILE**
 
-# Software Engineering 1 - 2025-1
-
+## Software Engineering 1 - 2025-1  
 **Grupo #2 - Equipo #8**
 
-## 👥 Integrantes del equipo
+### 👥 Integrantes del equipo
 
-* Andrés Felipe Alarcón Pulido - [analarconp@unal.edu.co](mailto:analarconp@unal.edu.co)
-* Juan Daniel Jossa Soliz - [jjossa@unal.edu.co](mailto:jjossa@unal.edu.co)
-* Jaime Darley Angulo Tenorio - [jangulot@unal.edu.co](mailto:jangulot@unal.edu.co)
-* Michel Mauricio Castañeda Braga - [micastanedab@unal.edu.co](mailto:micastanedab@unal.edu.co)
+- Andrés Felipe Alarcón Pulido - [analarconp@unal.edu.co](mailto:analarconp@unal.edu.co)  
+- Juan Daniel Jossa Soliz - [jjossa@unal.edu.co](mailto:jjossa@unal.edu.co)  
+- Jaime Darley Angulo Tenorio - [jangulot@unal.edu.co](mailto:jangulot@unal.edu.co)  
+- Michel Mauricio Castañeda Braga - [micastanedab@unal.edu.co](mailto:micastanedab@unal.edu.co)
 
 ---
 
 ## 🧠 Descripción del Proyecto
 
-**FortiFile** es una aplicación de escritorio diseñada para ofrecer un entorno **seguro, privado y organizado** para almacenar archivos sensibles. Gracias al uso de tecnologías de **cifrado**, **autenticación** robusta y una interfaz amigable con **PyQt5**, el usuario puede tener control completo sobre sus documentos confidenciales.
+**FortiFile** es una aplicación de escritorio diseñada para ofrecer un entorno **seguro, privado y organizado** para almacenar archivos sensibles.  
+Gracias al uso de tecnologías de **cifrado**, **autenticación robusta** y una interfaz amigable con **PyQt5**, el usuario puede tener control completo sobre sus documentos confidenciales.
 
 > El objetivo de FortiFile es brindar una solución segura pero simple para usuarios que desean proteger su información sin complejidad técnica.
 
@@ -31,94 +28,126 @@
 ## 🛠️ Tecnologías Principales
 
 | Componente     | Tecnología                          |
-| -------------- | ----------------------------------- |
+|----------------|-------------------------------------|
 | Lenguaje       | Python 3.8+                         |
 | GUI            | PyQt5                               |
 | Seguridad      | `cryptography`, `bcrypt`, `hashlib` |
 | Base de Datos  | SQLite                              |
 | Pruebas        | `pytest`, `unittest`                |
 | Estilo Código  | PEP8, Clean Code                    |
-| Automatización | `Makefile`, Shell Scripts           |
+| Automatización | Shell Scripts, `docs/Makefile`      |
 
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```
+
 Proyecto/
 ├── run.sh                    # 🚀 Script de acceso rápido (desde raíz)
-├── requirements.txt          # Dependencias Python
-├── .gitignore               # Archivos ignorados por Git
+├── requirements.txt          # 📜 Dependencias Python
+├── .gitignore                # Ignorados por Git
 ├── scripts/
-│   ├── run_fortifile.sh      # Script principal de ejecución
-│   ├── dev_run.sh            # Script de desarrollo rápido
-│   ├── init_project.sh       # Script de inicialización
-│   └── SCRIPTS_README.md     # Este archivo
+│   ├── run\_fortifile.sh      # 🧠 Script principal con verificación
+│   ├── dev\_run.sh            # 🧪 Ejecución rápida para desarrollo
+│   ├── init\_project.sh       # 🛠️ Inicialización tras clonación
+│   └── SCRIPTS\_README.md     # 📄 Documentación técnica de scripts
 ├── config/
 │   ├── pyproject.toml        # Configuración del proyecto
-│   ├── pytest.ini           # Configuración de pytest
-│   ├── .flake8              # Configuración de flake8
-│   └── .pylintrc            # Configuración de pylint
+│   ├── pytest.ini            # Configuración de pruebas
+│   ├── .flake8               # Linter
+│   └── .pylintrc             # Pylint
 ├── docs/
-│   └── Makefile             # Automatización con Make
+│   └── Makefile              # 📦 Automatización con Make
 ├── frontend/
-│   ├── app.py               # Aplicación principal GUI
-│   ├── assets/              # Recursos (iconos, imágenes)
-│   ├── themes/              # Temas y estilos
-│   └── ui/                  # Interfaces de usuario
+│   ├── app.py                # 🎨 Aplicación principal GUI
+│   ├── assets/               # Imágenes, íconos
+│   ├── themes/               # Temas de interfaz
+│   └── ui/                   # Interfaces gráficas
 ├── backend/
-│   ├── main.py              # Backend principal
-│   ├── database/            # Gestión de base de datos
-│   ├── models/              # Modelos de datos
-│   └── services/            # Servicios de negocio
-├── tests/                   # Tests del proyecto
-├── secure_files/            # Archivos cifrados (creado automáticamente)
-├── venv/                    # Entorno virtual (creado automáticamente)
-└── .vscode/                 # Configuración de VS Code
+│   ├── main.py               # Lógica principal
+│   ├── database/             # Gestión de base de datos
+│   ├── models/               # Modelos de datos
+│   └── services/             # Servicios de negocio
+├── tests/                    # ✅ Pruebas automáticas
+├── secure\_files/             # 🔐 Archivos cifrados (se crea automáticamente)
+├── venv/                     # 🌐 Entorno virtual
+└── .vscode/                  # Configuración de Visual Studio Code
+
+````
+
+---
+
+## ⚙️ Automatización y Scripts
+
+### 📌 Script Principal (`run_fortifile.sh`)
+
+- Verifica dependencias y entorno
+- Lanza la aplicación o corre pruebas
+- Soporte para virtualenv, backend-only, etc.
+
+```bash
+./scripts/run_fortifile.sh [--help] [--test] [--no-venv] [--backend-only]
+````
+
+### ⚡ Acceso Rápido desde Raíz
+
+```bash
+./run.sh                    # Ejecutar aplicación
+./run.sh --check-only       # Verificar sistema
+./run.sh --test             # Ejecutar con tests
+```
+
+### 🧪 Desarrollo Rápido
+
+```bash
+./scripts/dev_run.sh        # Ejecuta sin verificación
+```
+
+### 🔧 Inicialización del Proyecto
+
+```bash
+./scripts/init_project.sh   # Crea entorno, instala dependencias y configura base de datos
 ```
 
 ---
 
-## ⚡ Ejecución del Proyecto
+## 🛠️ Uso con Make (desde raíz)
 
-### Opción 1: Acceso rápido desde raíz
+El `Makefile` se encuentra en `docs/`.
 
 ```bash
-# Ejecutar normalmente
-./run.sh
-
-# Verificar el entorno sin ejecutar
-./run.sh --check-only
-
-# Mostrar ayuda
-./run.sh --help
+make -f docs/Makefile init      # Inicializar proyecto completo
+make -f docs/Makefile run       # Ejecutar aplicación
+make -f docs/Makefile dev       # Modo desarrollo
+make -f docs/Makefile test      # Ejecutar tests
+make -f docs/Makefile check     # Verificar dependencias
+make -f docs/Makefile lint      # Verificar estilo
+make -f docs/Makefile format    # Formatear código
+make -f docs/Makefile security  # Revisar seguridad
 ```
 
-### Opción 2: Uso directo desde `scripts/`
+---
+
+## 🔧 Requisitos del Sistema
+
+### Mínimos
+
+* **Sistema Operativo:** Linux, macOS o Windows
+* **Python:** 3.8 o superior (recomendado 3.12)
+* **Entorno gráfico:** Qt5 (X11, Wayland, etc.)
+
+### Linux (Ubuntu/Debian)
 
 ```bash
-cd scripts/
-
-# Verificación completa + ejecución
-./run_fortifile.sh
-
-# Modo test
-./run_fortifile.sh --test
-
-# Sin entorno virtual
-./run_fortifile.sh --no-venv
+sudo apt update
+sudo apt install python3 python3-pip python3-venv python3-pyqt5
 ```
 
-### Opción 3: Automatización con Makefile
+### macOS
 
 ```bash
-make init       # Inicializa entorno y dependencias
-make run        # Ejecuta FortiFile
-make dev        # Modo desarrollo
-make test       # Corre pruebas
-make check      # Verifica sistema
-make lint       # Linter del código
-make format     # Formateo automático
+brew install python3
 ```
 
 ---
@@ -127,59 +156,50 @@ make format     # Formateo automático
 
 **Backend**
 
-* `SQLAlchemy`: ORM para interacción con la base de datos
-* `bcrypt`, `cryptography`: Manejo seguro de contraseñas y cifrado
+* `SQLAlchemy 2.0.41`
+* `bcrypt 4.3.0`
+* `cryptography 45.0.5`
 
 **Frontend**
 
-* `PyQt5`: Interfaz de usuario moderna basada en Qt
+* `PyQt5 5.15.11`
+* `PyQt5-Qt5 5.15.17`
 
 **Desarrollo**
 
-* `pytest`, `unittest`: Pruebas automáticas
-* `flake8`, `black`: Linter y formateador de código
+* `pytest 8.4.1`
+* `black 25.1.0`
+* `flake8 7.3.0`
 
 ---
 
 ## 🆘 Problemas Comunes y Soluciones
 
-| Problema            | Solución                                               |
-| ------------------- | ------------------------------------------------------ |
-| Python no instalado | `sudo apt install python3 python3-pip`                 |
-| Qt5 no detectado    | `sudo apt install python3-pyqt5`                       |
-| Sin entorno gráfico | Asegúrate de tener `$DISPLAY` en Linux o usar `ssh -X` |
-| Archivos faltantes  | Ejecuta `./run.sh --check-only` para diagnosticar      |
-
----
-
-## ✅ Verificación y Diagnóstico
-
-Para verificar si todo está listo para ejecutar el proyecto:
-
-```bash
-# Diagnóstico general
-./run.sh --check-only
-# o
-make check
-```
+| Problema            | Solución                                                          |
+| ------------------- | ----------------------------------------------------------------- |
+| Python no instalado | `sudo apt install python3 python3-pip`                            |
+| Qt5 no detectado    | `sudo apt install python3-pyqt5`                                  |
+| Sin entorno gráfico | Verifica que `$DISPLAY` esté configurado o usa `ssh -X`           |
+| Archivos faltantes  | Ejecuta `./run.sh --check-only` o `run_fortifile.sh --check-only` |
 
 ---
 
 ## 🔒 Seguridad y Soporte
 
-FortiFile maneja cifrado seguro, hash de contraseñas con `bcrypt`, control de acceso basado en roles y claves generadas automáticamente.
+FortiFile aplica cifrado AES, hash seguro con `bcrypt` y control de acceso.
+Cuenta con verificación automatizada de entorno y diagnósticos en línea de comandos.
 
-Para soporte:
+### Soporte técnico:
 
-1. Ejecutar los scripts con `--check-only`
-2. Consultar los logs en la carpeta `logs/`
-3. Revisar las dependencias del sistema y Python
+1. Ejecuta `./run.sh --check-only` o `make -f docs/Makefile check`
+2. Consulta `logs/` para rastrear errores
+3. Revisa dependencias del sistema y virtualenv
 
 ---
 
-¿Listo para comenzar? Ejecuta:
+## 🟢 Comienza ya
 
 ```bash
-make init && make run
+make -f docs/Makefile init && make -f docs/Makefile run
 ```
 
