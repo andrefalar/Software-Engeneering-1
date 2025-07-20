@@ -46,26 +46,35 @@
 
 ```
 Proyecto/
-├── run.sh                    # 🚀 Script principal (desde raíz)
-├── Makefile                  # 📦 Automatización de tareas
-├── requirements.txt          # 📜 Dependencias Python
-├── pyproject.toml            # ⚙️ Configuración del proyecto
+├── run.sh                    # 🚀 Script de acceso rápido (desde raíz)
+├── requirements.txt          # Dependencias Python
+├── .gitignore               # Archivos ignorados por Git
 ├── scripts/
-│   ├── run_fortifile.sh      # 🧠 Script principal con verificación de entorno
-│   ├── dev_run.sh            # 🧪 Script de desarrollo rápido
-│   ├── init_project.sh       # 🛠️ Script de configuración inicial
-├── frontend/                 # 🎨 Interfaz gráfica
-│   ├── app.py                # App GUI principal
-│   └── ui/                   # Archivos de interfaz
-├── backend/                  # 🧠 Lógica del negocio
-│   ├── main.py
-│   ├── database/
-│   ├── models/
-│   └── services/
-├── tests/                    # ✅ Pruebas automáticas
-├── secure_files/             # 🔐 Archivos cifrados (generado automáticamente)
-├── logs/                     # 📄 Registros (generado automáticamente)
-└── venv/                     # 🌐 Entorno virtual (generado automáticamente)
+│   ├── run_fortifile.sh      # Script principal de ejecución
+│   ├── dev_run.sh            # Script de desarrollo rápido
+│   ├── init_project.sh       # Script de inicialización
+│   └── SCRIPTS_README.md     # Este archivo
+├── config/
+│   ├── pyproject.toml        # Configuración del proyecto
+│   ├── pytest.ini           # Configuración de pytest
+│   ├── .flake8              # Configuración de flake8
+│   └── .pylintrc            # Configuración de pylint
+├── docs/
+│   └── Makefile             # Automatización con Make
+├── frontend/
+│   ├── app.py               # Aplicación principal GUI
+│   ├── assets/              # Recursos (iconos, imágenes)
+│   ├── themes/              # Temas y estilos
+│   └── ui/                  # Interfaces de usuario
+├── backend/
+│   ├── main.py              # Backend principal
+│   ├── database/            # Gestión de base de datos
+│   ├── models/              # Modelos de datos
+│   └── services/            # Servicios de negocio
+├── tests/                   # Tests del proyecto
+├── secure_files/            # Archivos cifrados (creado automáticamente)
+├── venv/                    # Entorno virtual (creado automáticamente)
+└── .vscode/                 # Configuración de VS Code
 ```
 
 ---
