@@ -1,5 +1,43 @@
+# Archivos de caché de Python
 __pycache__/
+*.py[cod]
+*.pyo
 *.pyc
+
+# Archivos de base de datos y entornos
 *.db
 .env
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Archivos del editor
 .vscode/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de logs
+*.log
+
+# Archivos temporales
+*.swp
+*.bak
+*.tmp
+
+# Archivos compilados
+*.so
+
+# FortiFile - Archivos de seguridad y datos sensibles
+fortifile.key
+test_fortifile.db
+fortifile.db
+secure_files/
+backup_test/
+
+# Archivos temporales de prueba
+test_document.txt
+downloaded_document.txt

@@ -1,0 +1,32 @@
+[MASTER]
+init-hook='import sys; sys.path.append(".")'
+
+[MESSAGES CONTROL]
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    R0903,  # too-few-public-methods
+    W0613,  # unused-argument
+    R0801,  # duplicate-code
+    C0103   # invalid-name (for variables like 'id')
+
+[FORMAT]
+max-line-length=88
+
+[DESIGN]
+max-args=10
+max-locals=20
+max-returns=6
+max-branches=15
+max-statements=50
+
+[SIMILARITIES]
+min-similarity-lines=10
+
+[VARIABLES]
+good-names=i,j,k,ex,Run,_,id,db
+
+[REPORTS]
+output-format=text
+reports=yes
