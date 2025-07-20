@@ -1,5 +1,5 @@
 
-![FortiFile Logo](https://github.com/user-attachments/assets/df009338-ea3e-4e99-bbd7-bb4e2b44d965)
+<p align="center"> <img src="https://github.com/user-attachments/assets/df009338-ea3e-4e99-bbd7-bb4e2b44d965" width="300" alt="FortiFile Logo"><br> </p> <h1 align="center"> <strong><span style="color:#002147">FORTIFILE</span></strong> </h1>
 
 # **FORTIFILE**
 
