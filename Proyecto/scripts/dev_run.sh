@@ -3,7 +3,7 @@
 # FortiFile - Script de desarrollo rápido
 # Para uso durante desarrollo (sin todas las verificaciones)
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # Subir un nivel ya que estamos en scripts/
 VENV_DIR="$PROJECT_DIR/venv"
 
 # Colores
