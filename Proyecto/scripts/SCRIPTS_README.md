@@ -79,24 +79,25 @@ Script para configurar el proyecto por primera vez o después de un git clone.
 ./init_project.sh
 ```
 
-### 4. `Makefile` (Automatización con Make)
+### 4. `../docs/Makefile` (Automatización con Make)
 
-Sistema de automatización completo usando Make.
+Sistema de automatización completo usando Make, ubicado en la carpeta `docs/`.
 
 **Comandos principales:**
 ```bash
-make help      # Mostrar ayuda
-make init      # Inicializar proyecto
-make run       # Ejecutar aplicación
-make dev       # Modo desarrollo
-make test      # Ejecutar tests
-make check     # Verificar dependencias
-make lint      # Linting del código
-make format    # Formatear código
-make clean     # Limpiar archivos temporales
-make deps      # Información de dependencias
-make security  # Verificar configuración de seguridad
-make backup    # Crear backup del proyecto
+# Desde el directorio raíz:
+make -f docs/Makefile help      # Mostrar ayuda
+make -f docs/Makefile init      # Inicializar proyecto
+make -f docs/Makefile run       # Ejecutar aplicación
+make -f docs/Makefile dev       # Modo desarrollo
+make -f docs/Makefile test      # Ejecutar tests
+make -f docs/Makefile check     # Verificar dependencias
+make -f docs/Makefile lint      # Linting del código
+make -f docs/Makefile format    # Formatear código
+make -f docs/Makefile clean     # Limpiar archivos temporales
+make -f docs/Makefile deps      # Información de dependencias
+make -f docs/Makefile security  # Verificar configuración de seguridad
+make -f docs/Makefile backup    # Crear backup del proyecto
 ```
 
 ## Guía de Uso Rápido
@@ -116,6 +117,15 @@ cd scripts/
 ./run_fortifile.sh          # Ejecución completa
 ./dev_run.sh               # Desarrollo rápido
 ./init_project.sh          # Inicialización (primera vez)
+```
+
+### **⚙️ Uso con Make (desde raíz):**
+```bash
+# El Makefile está en docs/, usar desde el directorio raíz:
+make -f docs/Makefile run    # Ejecutar aplicación
+make -f docs/Makefile dev    # Desarrollo rápido
+make -f docs/Makefile test   # Ejecutar tests
+make -f docs/Makefile help   # Ver todas las opciones
 ```
 
 ## Requisitos del Sistema
@@ -149,16 +159,24 @@ brew install python3
 ```
 Proyecto/
 ├── run.sh                    # 🚀 Script de acceso rápido (desde raíz)
-├── Makefile                  # Automatización con Make
 ├── requirements.txt          # Dependencias Python
-├── pyproject.toml           # Configuración del proyecto
+├── .gitignore               # Archivos ignorados por Git
 ├── scripts/
 │   ├── run_fortifile.sh      # Script principal de ejecución
 │   ├── dev_run.sh            # Script de desarrollo rápido
 │   ├── init_project.sh       # Script de inicialización
 │   └── SCRIPTS_README.md     # Este archivo
+├── config/
+│   ├── pyproject.toml        # Configuración del proyecto
+│   ├── pytest.ini           # Configuración de pytest
+│   ├── .flake8              # Configuración de flake8
+│   └── .pylintrc            # Configuración de pylint
+├── docs/
+│   └── Makefile             # Automatización con Make
 ├── frontend/
 │   ├── app.py               # Aplicación principal GUI
+│   ├── assets/              # Recursos (iconos, imágenes)
+│   ├── themes/              # Temas y estilos
 │   └── ui/                  # Interfaces de usuario
 ├── backend/
 │   ├── main.py              # Backend principal
@@ -167,8 +185,8 @@ Proyecto/
 │   └── services/            # Servicios de negocio
 ├── tests/                   # Tests del proyecto
 ├── secure_files/            # Archivos cifrados (creado automáticamente)
-├── logs/                    # Logs de la aplicación (creado automáticamente)
-└── venv/                    # Entorno virtual (creado automáticamente)
+├── venv/                    # Entorno virtual (creado automáticamente)
+└── .vscode/                 # Configuración de VS Code
 ```
 
 ## Dependencias Principales
