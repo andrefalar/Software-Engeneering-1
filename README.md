@@ -43,7 +43,8 @@ Gracias al uso de tecnologías de **cifrado**, **autenticación robusta** y una 
 
 ```
 Proyecto/
-├── run.sh                    # 🚀 Script de acceso rápido (desde raíz)
+├── run.sh                    # 🚀 Script de acceso rápido (desde raíz para Linux/macOS)
+├── run.bat                   # 🚀 Script de acceso rápido para Windows
 ├── requirements.txt          # 📜 Dependencias Python
 ├── .gitignore                # Ignorados por Git
 ├── scripts/
@@ -91,9 +92,13 @@ Proyecto/
 ### ⚡ Acceso Rápido desde Raíz
 
 ```bash
+# Linux/macOS
 ./run.sh                    # Ejecutar aplicación
 ./run.sh --check-only       # Verificar sistema
 ./run.sh --test             # Ejecutar con tests
+
+# Windows
+run.bat                     # Ejecutar aplicación en Windows
 ```
 
 ### 🧪 Desarrollo Rápido
@@ -148,6 +153,13 @@ sudo apt install python3 python3-pip python3-venv python3-pyqt5
 brew install python3
 ```
 
+### Windows
+
+```bash
+# Ejecutar el script de instalación y ejecución
+run.bat
+```
+
 ---
 
 ## 🧩 Dependencias Clave
@@ -175,10 +187,10 @@ brew install python3
 
 | Problema            | Solución                                                          |
 | ------------------- | ----------------------------------------------------------------- |
-| Python no instalado | `sudo apt install python3 python3-pip`                            |
-| Qt5 no detectado    | `sudo apt install python3-pyqt5`                                  |
-| Sin entorno gráfico | Verifica que `$DISPLAY` esté configurado o usa `ssh -X`           |
-| Archivos faltantes  | Ejecuta `./run.sh --check-only` o `run_fortifile.sh --check-only` |
+| Python no instalado | Linux: `sudo apt install python3 python3-pip`<br>Windows: Descarga desde [python.org](https://www.python.org/downloads/) |
+| Qt5 no detectado    | Linux: `sudo apt install python3-pyqt5`<br>Windows: Se instala automáticamente con `run.bat` |
+| Sin entorno gráfico | Linux: Verifica que `$DISPLAY` esté configurado o usa `ssh -X`<br>Windows: Asegúrate de no estar en una sesión de terminal remota |
+| Archivos faltantes  | Linux: Ejecuta `./run.sh --check-only` o `run_fortifile.sh --check-only`<br>Windows: Ejecuta `run.bat` que verificará e instalará lo necesario |
 
 ---
 
@@ -189,7 +201,8 @@ Cuenta con verificación automatizada de entorno y diagnósticos en línea de co
 
 ### Soporte técnico
 
-1. Ejecuta `./run.sh --check-only` o `make -f docs/Makefile check`
+1. Linux/macOS: Ejecuta `./run.sh --check-only` o `make -f docs/Makefile check`
+   Windows: Ejecuta `run.bat` que verificará automáticamente el entorno
 2. Consulta `logs/` para rastrear errores
 3. Revisa dependencias del sistema y entorno virtual
 
@@ -198,6 +211,13 @@ Cuenta con verificación automatizada de entorno y diagnósticos en línea de co
 ## 🟢 Comienza ya
 
 ```bash
+# Linux/macOS con Make
 make -f docs/Makefile init && make -f docs/Makefile run
+
+# Linux/macOS con script directo
+./run.sh
+
+# Windows
+run.bat
 ```
 
