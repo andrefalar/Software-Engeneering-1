@@ -1,24 +1,24 @@
 
-```markdown
 ![FortiFile Logo](https://github.com/user-attachments/assets/df009338-ea3e-4e99-bbd7-bb4e2b44d965)
 
 # **FORTIFILE**
 
-## Software Engineering 1 - 2025-1  
+## Software Engineering 1 - 2025-1
+
 **Grupo #2 - Equipo #8**
 
 ### 👥 Integrantes del equipo
 
-- Andrés Felipe Alarcón Pulido - [analarconp@unal.edu.co](mailto:analarconp@unal.edu.co)  
-- Juan Daniel Jossa Soliz - [jjossa@unal.edu.co](mailto:jjossa@unal.edu.co)  
-- Jaime Darley Angulo Tenorio - [jangulot@unal.edu.co](mailto:jangulot@unal.edu.co)  
-- Michel Mauricio Castañeda Braga - [micastanedab@unal.edu.co](mailto:micastanedab@unal.edu.co)
+* Andrés Felipe Alarcón Pulido - [analarconp@unal.edu.co](mailto:analarconp@unal.edu.co)
+* Juan Daniel Jossa Soliz - [jjossa@unal.edu.co](mailto:jjossa@unal.edu.co)
+* Jaime Darley Angulo Tenorio - [jangulot@unal.edu.co](mailto:jangulot@unal.edu.co)
+* Michel Mauricio Castañeda Braga - [micastanedab@unal.edu.co](mailto:micastanedab@unal.edu.co)
 
 ---
 
 ## 🧠 Descripción del Proyecto
 
-**FortiFile** es una aplicación de escritorio diseñada para ofrecer un entorno **seguro, privado y organizado** para almacenar archivos sensibles.  
+**FortiFile** es una aplicación de escritorio diseñada para ofrecer un entorno **seguro, privado y organizado** para almacenar archivos sensibles.
 Gracias al uso de tecnologías de **cifrado**, **autenticación robusta** y una interfaz amigable con **PyQt5**, el usuario puede tener control completo sobre sus documentos confidenciales.
 
 > El objetivo de FortiFile es brindar una solución segura pero simple para usuarios que desean proteger su información sin complejidad técnica.
@@ -28,7 +28,7 @@ Gracias al uso de tecnologías de **cifrado**, **autenticación robusta** y una 
 ## 🛠️ Tecnologías Principales
 
 | Componente     | Tecnología                          |
-|----------------|-------------------------------------|
+| -------------- | ----------------------------------- |
 | Lenguaje       | Python 3.8+                         |
 | GUI            | PyQt5                               |
 | Seguridad      | `cryptography`, `bcrypt`, `hashlib` |
@@ -42,16 +42,15 @@ Gracias al uso de tecnologías de **cifrado**, **autenticación robusta** y una 
 ## 📁 Estructura del Proyecto
 
 ```
-
 Proyecto/
 ├── run.sh                    # 🚀 Script de acceso rápido (desde raíz)
 ├── requirements.txt          # 📜 Dependencias Python
 ├── .gitignore                # Ignorados por Git
 ├── scripts/
-│   ├── run\_fortifile.sh      # 🧠 Script principal con verificación
-│   ├── dev\_run.sh            # 🧪 Ejecución rápida para desarrollo
-│   ├── init\_project.sh       # 🛠️ Inicialización tras clonación
-│   └── SCRIPTS\_README.md     # 📄 Documentación técnica de scripts
+│   ├── run_fortifile.sh      # 🧠 Script principal con verificación
+│   ├── dev_run.sh            # 🧪 Ejecución rápida para desarrollo
+│   ├── init_project.sh       # 🛠️ Inicialización tras clonación
+│   └── SCRIPTS_README.md     # 📄 Documentación técnica de scripts
 ├── config/
 │   ├── pyproject.toml        # Configuración del proyecto
 │   ├── pytest.ini            # Configuración de pruebas
@@ -70,11 +69,10 @@ Proyecto/
 │   ├── models/               # Modelos de datos
 │   └── services/             # Servicios de negocio
 ├── tests/                    # ✅ Pruebas automáticas
-├── secure\_files/             # 🔐 Archivos cifrados (se crea automáticamente)
+├── secure_files/             # 🔐 Archivos cifrados (se crea automáticamente)
 ├── venv/                     # 🌐 Entorno virtual
 └── .vscode/                  # Configuración de Visual Studio Code
-
-````
+```
 
 ---
 
@@ -82,13 +80,13 @@ Proyecto/
 
 ### 📌 Script Principal (`run_fortifile.sh`)
 
-- Verifica dependencias y entorno
-- Lanza la aplicación o corre pruebas
-- Soporte para virtualenv, backend-only, etc.
+* Verifica dependencias y entorno
+* Lanza la aplicación o corre pruebas
+* Soporte para virtualenv, backend-only, etc.
 
 ```bash
 ./scripts/run_fortifile.sh [--help] [--test] [--no-venv] [--backend-only]
-````
+```
 
 ### ⚡ Acceso Rápido desde Raíz
 
@@ -189,11 +187,11 @@ brew install python3
 FortiFile aplica cifrado AES, hash seguro con `bcrypt` y control de acceso.
 Cuenta con verificación automatizada de entorno y diagnósticos en línea de comandos.
 
-### Soporte técnico:
+### Soporte técnico
 
 1. Ejecuta `./run.sh --check-only` o `make -f docs/Makefile check`
 2. Consulta `logs/` para rastrear errores
-3. Revisa dependencias del sistema y virtualenv
+3. Revisa dependencias del sistema y entorno virtual
 
 ---
 
