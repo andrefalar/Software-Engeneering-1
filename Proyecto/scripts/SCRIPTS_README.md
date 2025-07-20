@@ -4,6 +4,24 @@ Este directorio contiene scripts y herramientas para ejecutar, desarrollar y man
 
 ## Scripts Disponibles
 
+### 0. `../run.sh` (Acceso Rápido desde Raíz)
+
+Script de acceso rápido ubicado en el directorio raíz del proyecto que permite ejecutar FortiFile sin necesidad de navegar a la carpeta `scripts/`.
+
+**Características:**
+- 🚀 Ejecución directa desde el directorio raíz del proyecto
+- 🔗 Redirecciona automáticamente a `scripts/run_fortifile.sh`
+- 📋 Acepta todas las opciones del script principal
+
+**Uso desde el directorio raíz:**
+```bash
+# Desde /home/andres/projects/python/Software-Engeneering-1/Proyecto/
+./run.sh                    # Ejecución normal
+./run.sh --help             # Mostrar ayuda
+./run.sh --check-only       # Solo verificar sistema
+./run.sh --test             # Ejecutar con tests
+```
+
 ### 1. `run_fortifile.sh` (Script Principal)
 
 Script completo con verificación exhaustiva de dependencias y configuración del entorno.
@@ -81,6 +99,25 @@ make security  # Verificar configuración de seguridad
 make backup    # Crear backup del proyecto
 ```
 
+## Guía de Uso Rápido
+
+### **🚀 Acceso rápido desde el directorio raíz:**
+```bash
+# Desde el directorio principal del proyecto
+./run.sh                    # Ejecutar FortiFile
+./run.sh --check-only       # Solo verificar sistema  
+./run.sh --help             # Mostrar ayuda
+```
+
+### **📋 Uso desde la carpeta scripts:**
+```bash
+# Navegar a scripts/ y ejecutar directamente
+cd scripts/
+./run_fortifile.sh          # Ejecución completa
+./dev_run.sh               # Desarrollo rápido
+./init_project.sh          # Inicialización (primera vez)
+```
+
 ## Requisitos del Sistema
 
 ### Mínimos
@@ -111,13 +148,15 @@ brew install python3
 
 ```
 Proyecto/
-├── run_fortifile.sh          # Script principal de ejecución
-├── dev_run.sh                # Script de desarrollo rápido
-├── init_project.sh           # Script de inicialización
+├── run.sh                    # 🚀 Script de acceso rápido (desde raíz)
 ├── Makefile                  # Automatización con Make
-├── SCRIPTS_README.md         # Este archivo
 ├── requirements.txt          # Dependencias Python
 ├── pyproject.toml           # Configuración del proyecto
+├── scripts/
+│   ├── run_fortifile.sh      # Script principal de ejecución
+│   ├── dev_run.sh            # Script de desarrollo rápido
+│   ├── init_project.sh       # Script de inicialización
+│   └── SCRIPTS_README.md     # Este archivo
 ├── frontend/
 │   ├── app.py               # Aplicación principal GUI
 │   └── ui/                  # Interfaces de usuario
@@ -172,6 +211,8 @@ sudo apt install python3-pyqt5 python3-pyqt5.qtwidgets
 Verifica que todos los archivos del proyecto estén presentes:
 ```bash
 ./run_fortifile.sh --check-only
+# o desde el directorio raíz:
+../run.sh --check-only
 ```
 
 ## Logs y Debug
@@ -192,6 +233,6 @@ Para modificar los scripts:
 ## Soporte
 
 Para problemas con los scripts:
-1. Ejecuta `./run_fortifile.sh --check-only` para diagnosticar
+1. Ejecuta `./run_fortifile.sh --check-only` (o `../run.sh --check-only` desde raíz) para diagnosticar
 2. Verifica que todas las dependencias estén instaladas
 3. Consulta los logs de error para más detalles
